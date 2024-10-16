@@ -1,25 +1,18 @@
 package org.mtcg.models;
 
-
 import lombok.Getter;
 
+@Getter
 public class User {
-  @Getter private final String token;
-  @Getter private final String username;
-  @Getter private final String password;
+  private final String token;
+  private final String username;
+  private final String password;
+  private int coins;
 
-  public String getId() {
-    return token;
-  }
-  public String getUsername() {
-    return username;
-  }
-  public String getPassword() {
-    return password;
-  }
-  public User(String token, String username, String password) {
-    this.token = token;
-    this.username = username;
-    this.password = password;
+  public User(String name, String passwrd) {
+    token = name + "-mtcgTocken";
+    username = name;
+    password = passwrd;
+    coins = 20;
   }
 }
