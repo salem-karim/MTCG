@@ -1,18 +1,26 @@
 package org.mtcg.models;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.mindrot.jbcrypt.BCrypt;
 import lombok.Getter;
 import lombok.Setter;
-import org.mindrot.jbcrypt.BCrypt;
 
-@Getter @Setter
+@Getter
+@Setter
 public class User {
   private final String token;
   private final String username;
+
+  @JsonIgnore // Ignore this field during serialization/deserialization
   private final String password; // This should be hashed
   private int coins;
 
-  public User(String name, String passwrd) {
-    this.token = name + "-mtcgTocken";
+  @JsonCreator // Constructor for ObjectMapper
+  public User(@JsonProperty("Username") String name,
+              @JsonProperty("Password") String passwrd) {
+    this.token = name + "-mtcgToken"; // Token naming convention
     this.username = name;
     this.password = hashPassword(passwrd); // Hash the password upon user creation
     this.coins = 20; // Default coins
@@ -24,7 +32,9 @@ public class User {
   }
 
   // Method to verify the password during login
+  @JsonIgnore // Ignore this method during serialization
   public boolean verifyPassword(String password) {
     return BCrypt.checkpw(password, this.password);
   }
+
 }

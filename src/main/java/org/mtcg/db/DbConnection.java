@@ -8,13 +8,13 @@ public class DbConnection {
 
   // Database credentials
   private static final String DB_URL = "jdbc:postgresql://localhost:5432/mctg_db"; // Update with your DB URL
+//  private static final String DB_URL = "jdbc:postgresql://db:5432/mctg_db"; // Update with your DB URL
   private static final String USER = "mctgdb"; // Your PostgreSQL username
   private static final String PASSWORD = "mctgadmin"; // Your PostgreSQL password
 
   // Method to establish a connection
   public static Connection getConnection() throws SQLException {
-    Connection connection = DriverManager.getConnection(DB_URL, USER, PASSWORD);
-    return connection;
+    return DriverManager.getConnection(DB_URL, USER, PASSWORD);
   }
 
   // Method to close the connection

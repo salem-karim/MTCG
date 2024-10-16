@@ -1,3 +1,7 @@
+-- Grant privileges
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO mctgdb;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO mctgdb;
+
 -- Drop all tables if they exist
 DROP TABLE IF EXISTS trading_deals CASCADE;
 DROP TABLE IF EXISTS battles CASCADE;

@@ -2,6 +2,7 @@ package org.mtcg.dbaccess;
 
 import org.mtcg.db.DbConnection;
 import org.mtcg.models.User;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,10 +12,9 @@ public class UserDbAccess {
 
   // Method to add a user
   public boolean addUser(User user) {
-    String sql = "INSERT INTO users (username, password, coins) VALUES (?, ?, DEFAULT)";
-
-    try (Connection connection = DbConnection.getConnection();
-         PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+    try (Connection connection = DbConnection.getConnection()) {
+      String sql = "INSERT INTO users (username, password, coins) VALUES (?, ?, DEFAULT)";
+      PreparedStatement preparedStatement = connection.prepareStatement(sql);
 
       // Set parameters
       preparedStatement.setString(1, user.getUsername());
@@ -25,22 +25,31 @@ public class UserDbAccess {
       // If one row is affected, the user was added successfully
       return affectedRows > 0;
     } catch (SQLException e) {
-      // Check for unique constraint violation based on the error message
-      if (e.getMessage() != null && e.getMessage().contains("duplicate key")) {
-        return false; // Username already exists
-      }
-      e.printStackTrace();
-      return false; // Handle other SQL errors
+      System.err.println("SQLException: " + e.getMessage());
+      e.printStackTrace(); // Print stack trace for debugging
+      return false;
+    } catch (Exception e) {
+      System.err.println("Exception: " + e.getMessage());
+      e.printStackTrace(); // Print stack trace for debugginga
+      return false;
     }
+//    } catch (SQLException e) {
+//      // Check for unique constraint violation based on the error message
+//      if (e.getMessage() != null && e.getMessage().contains("duplicate key")) {
+//        return false; // Username already exists
+//      }
+//      e.printStackTrace();
+//      return false; // Handle other SQL errors
+//    }
   }
+
 
   // Method to get a user by username
   public User getUserByUsername(String username) {
-    String sql = "SELECT username, password, coins FROM users WHERE username = ?";
     User user = null;
-
-    try (Connection connection = DbConnection.getConnection();
-         PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+    try (Connection connection = DbConnection.getConnection()) {
+      String sql = "SELECT username, password, coins FROM users WHERE username = ?";
+      PreparedStatement preparedStatement = connection.prepareStatement(sql);
 
       // Set parameters
       preparedStatement.setString(1, username);
