@@ -7,24 +7,20 @@ import org.mtcg.httpserver.HttpResponse;
 import org.mtcg.utils.HttpStatus;
 import org.mtcg.utils.ContentType;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class UserController {
-
+public class UserController extends Controller {
   private final UserDbAccess userDbAccess;
-  private final ObjectMapper objectMapper;
 
   public UserController() {
+    super();
     this.userDbAccess = new UserDbAccess();
-    this.objectMapper = new ObjectMapper(); // Initialize Jackson ObjectMapper
   }
 
   // Method to add a user
   public HttpResponse addUser(HttpRequest request) {
     try {
       // Assuming the request body contains JSON with user details
-      User user = objectMapper.readValue(request.getBody(), User.class);
-
+      User user = getObjectMapper().readValue(request.getBody(), User.class);
       boolean added = userDbAccess.addUser(user);
 
       if (added) {
@@ -37,34 +33,28 @@ public class UserController {
     }
   }
 
-  // Method to get a user by username
-  public HttpResponse getUser(HttpRequest request) throws JsonProcessingException {
-    // Extracting the username from path segments
-    if (request.getPathSegments().size() < 2) {
-      return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Username not provided");
-    }
-
-    String username = request.getPathSegments().get(1); // Get the username from the path
-
-    User user = userDbAccess.getUserByUsername(username);
-    if (user != null) {
-      return new HttpResponse(HttpStatus.OK, ContentType.JSON, objectMapper.writeValueAsString(user));
-    } else {
-      return new HttpResponse(HttpStatus.NOT_FOUND, ContentType.JSON, "User not found");
-    }
-  }
-
+  // Updated loginUser method
   public HttpResponse loginUser(HttpRequest request) {
     try {
-      User user = objectMapper.readValue(request.getBody(), User.class);
-      String token = userDbAccess.getUserByUsername(user.getUsername()).getToken();
-      if (token != null) {
-        return new HttpResponse(HttpStatus.OK, ContentType.JSON, objectMapper.writeValueAsString(user));
+      // Get the raw request body
+      String body = request.getBody();
+
+      // Extracting username and password from the request body
+      String username = body.split("\"Username\":\"")[1].split("\"")[0];
+      String providedPassword = body.split("\"Password\":\"")[1].split("\"")[0];
+
+      // Step 1: Retrieve the user from the database by username
+      User userFromDb = userDbAccess.getUserByUsername(username); // This method should return a User with hashed password
+
+      // Step 2: Verify password if user exists
+      if (userFromDb != null && userFromDb.verifyPassword(providedPassword)) {
+        return new HttpResponse(HttpStatus.OK, ContentType.JSON, userFromDb.getToken());
       } else {
         return new HttpResponse(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Wrong login credentials");
       }
-    } catch (JsonProcessingException e) {
+    } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
       return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Invalid request format");
     }
   }
+
 }

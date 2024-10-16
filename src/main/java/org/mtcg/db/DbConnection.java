@@ -7,7 +7,7 @@ import java.sql.SQLException;
 public class DbConnection {
 
   // Database credentials
-  private static final String DB_URL = "jdbc:postgresql://localhost:5433/mctg_db"; // Update with your DB URL
+  private static final String DB_URL = "jdbc:postgresql://localhost:5432/mctg_db"; // Update with your DB URL
 //  private static final String DB_URL = "jdbc:postgresql://db:5432/mctg_db"; // Update with your DB URL
   private static final String USER = "mctgdb"; // Your PostgreSQL username
   private static final String PASSWORD = "mctgadmin"; // Your PostgreSQL password

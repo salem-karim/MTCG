@@ -1,6 +1,5 @@
 package org.mtcg.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.mtcg.controller.UserController;
 import org.mtcg.httpserver.HttpRequest;
 import org.mtcg.httpserver.HttpResponse;
@@ -18,13 +17,13 @@ public class UserService implements Service {
 
   public UserService() {
     this.userController = new UserController();
-    userMethods.put(Method.GET, (HttpRequest req) -> {
-      try {
-        return this.userController.getUser(req);
-      } catch (JsonProcessingException e) {
-        throw new RuntimeException(e);
-      }
-    });
+//    userMethods.put(Method.GET, (HttpRequest req) -> {
+//      try {
+//        return this.userController.getUser(req);
+//      } catch (JsonProcessingException e) {
+//        throw new RuntimeException(e);
+//      }
+//    });
     userMethods.put(Method.POST, (HttpRequest req) -> {
       if (req.getPath().equals("/sessions")) {
         return this.userController.loginUser(req); // Handle login

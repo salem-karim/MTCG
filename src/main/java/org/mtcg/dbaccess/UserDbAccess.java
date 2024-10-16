@@ -38,29 +38,25 @@ public class UserDbAccess {
 
   // Method to get a user by username
   public User getUserByUsername(String username) {
-    User user = null;
     try (Connection connection = DbConnection.getConnection()) {
-      String sql = "SELECT username, password, coins FROM users WHERE username = ?";
+      String sql = "SELECT username, password, token FROM users WHERE username = ?";
       PreparedStatement preparedStatement = connection.prepareStatement(sql);
-
-      // Set parameters
       preparedStatement.setString(1, username);
 
       try (ResultSet resultSet = preparedStatement.executeQuery()) {
         if (resultSet.next()) {
-          // Retrieve user data
-          String password = resultSet.getString("password");
-          int coins = resultSet.getInt("coins");
+          String token = resultSet.getString("token");
+          String hashedPassword = resultSet.getString("password");
 
-          // Create and return the User object
-          user = new User(username, password);
-//          user.setCoins(coins); // Assuming you have a setter for coins
+          // Create a User instance without exposing the password
+          return new User(username, token, hashedPassword);
         }
       }
     } catch (SQLException e) {
       e.printStackTrace(); // Log the exception
     }
-
-    return user; // Return the user object or null if not found
+    return null; // Return null if user is not found
   }
+
+
 }
