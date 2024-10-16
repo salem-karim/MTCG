@@ -53,4 +53,18 @@ public class UserController {
       return new HttpResponse(HttpStatus.NOT_FOUND, ContentType.JSON, "User not found");
     }
   }
+
+  public HttpResponse loginUser(HttpRequest request) {
+    try {
+      User user = objectMapper.readValue(request.getBody(), User.class);
+      String token = userDbAccess.getUserByUsername(user.getUsername()).getToken();
+      if (token != null) {
+        return new HttpResponse(HttpStatus.OK, ContentType.JSON, objectMapper.writeValueAsString(user));
+      } else {
+        return new HttpResponse(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Wrong login credentials");
+      }
+    } catch (JsonProcessingException e) {
+      return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Invalid request format");
+    }
+  }
 }

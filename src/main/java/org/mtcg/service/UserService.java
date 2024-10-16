@@ -25,7 +25,13 @@ public class UserService implements Service {
         throw new RuntimeException(e);
       }
     });
-    userMethods.put(Method.POST, this.userController::addUser);
+    userMethods.put(Method.POST, (HttpRequest req) -> {
+      if (req.getPath().equals("/sessions")) {
+        return this.userController.loginUser(req); // Handle login
+      } else {
+        return this.userController.addUser(req); // Handle user registration
+      }
+    });
   }
 
   @Override

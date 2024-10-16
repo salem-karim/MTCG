@@ -20,7 +20,8 @@ CREATE TABLE users
     username VARCHAR(50) UNIQUE           NOT NULL,
     password VARCHAR(100)                 NOT NULL,
     coins    INT              DEFAULT 20  NOT NULL,
-    elo      INT              DEFAULT 100 NOT NULL
+    elo      INT              DEFAULT 100 NOT NULL,
+    token    VARCHAR(255)                 NOT NULL
 );
 
 -- Create Cards Table

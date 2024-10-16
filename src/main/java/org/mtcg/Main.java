@@ -12,6 +12,7 @@ public class Main {
   private static Router configureRouter() {
     Router router = new Router();
     router.addService("/users", new UserService());
+    router.addService("/sessions", new UserService());
     return router;
   }
 }

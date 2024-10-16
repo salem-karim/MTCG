@@ -13,34 +13,26 @@ public class UserDbAccess {
   // Method to add a user
   public boolean addUser(User user) {
     try (Connection connection = DbConnection.getConnection()) {
-      String sql = "INSERT INTO users (username, password, coins) VALUES (?, ?, DEFAULT)";
+      String sql = "INSERT INTO users (username, password, coins, token) VALUES (?, ?, DEFAULT, ?)";
       PreparedStatement preparedStatement = connection.prepareStatement(sql);
 
       // Set parameters
       preparedStatement.setString(1, user.getUsername());
       preparedStatement.setString(2, user.getPassword()); // Use the hashed password from User
+      preparedStatement.setString(3, user.getToken());
 
       int affectedRows = preparedStatement.executeUpdate();
 
       // If one row is affected, the user was added successfully
       return affectedRows > 0;
     } catch (SQLException e) {
-      System.err.println("SQLException: " + e.getMessage());
-      e.printStackTrace(); // Print stack trace for debugging
-      return false;
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace(); // Print stack trace for debugginga
-      return false;
+      // Check for unique constraint violation based on the error message
+      if (e.getMessage() != null && e.getMessage().contains("duplicate key")) {
+        return false; // Username already exists
+      }
+      e.printStackTrace();
+      return false; // Handle other SQL errors
     }
-//    } catch (SQLException e) {
-//      // Check for unique constraint violation based on the error message
-//      if (e.getMessage() != null && e.getMessage().contains("duplicate key")) {
-//        return false; // Username already exists
-//      }
-//      e.printStackTrace();
-//      return false; // Handle other SQL errors
-//    }
   }
 
 
