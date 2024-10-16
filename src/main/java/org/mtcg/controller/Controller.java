@@ -1,4 +1,4 @@
-package org.mtcg.utils;
+package org.mtcg.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
