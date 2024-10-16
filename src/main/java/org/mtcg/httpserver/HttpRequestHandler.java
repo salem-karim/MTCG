@@ -1,10 +1,9 @@
 package org.mtcg.httpserver;
 
 import java.io.*;
-import java.net.Socket;
 
 public class HttpRequestHandler {
-  public void handleRequest(Socket socket, HttpRequest request) throws IOException {
+  public void handleRequest(PrintWriter writer, HttpRequest request) throws IOException {
     // Log the request details
     System.out.println("Request Method: " + request.getMethod());
     System.out.println("Request Path: " + request.getPath());
@@ -12,20 +11,9 @@ public class HttpRequestHandler {
     System.out.println("Request Body: " + request.getBody());
 
     // Prepare the response
-    String response = "HTTP/1.1 200 OK\r\n" +
-            "Content-Type: text/plain\r\n" +
-            "Content-Length: 2\r\n" +
-            "\r\n" +
-            "OK";
-
+    HttpResponse response = new HttpResponse(200, "User created");
     // Send the response to the client
-    try (OutputStream outputStream = socket.getOutputStream()) {
-      outputStream.write(response.getBytes());
-      outputStream.flush();
-    } catch (IOException e) {
-      System.err.println("Error writing response: " + e.getMessage());
-    }
-
+    writer.write(response.getResponse());
+    writer.flush();
   }
-
 }

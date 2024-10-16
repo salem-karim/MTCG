@@ -1,6 +1,9 @@
 package org.mtcg.httpserver;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
@@ -29,10 +32,15 @@ public class HttpServer implements Runnable {
         // Handle the request in a separate thread
         pool.execute(() -> {
           try {
+            var input = client.getInputStream();
+            var output = client.getOutputStream();
+            var inputReader = new InputStreamReader(input);
+            var bufferReader = new BufferedReader(inputReader);
+            var printWriter = new PrintWriter(output);
             // Create the request object from the client's input stream
-            HttpRequest req = new HttpRequest(client.getInputStream());
+            HttpRequest req = new HttpRequest(bufferReader);
             HttpRequestHandler handler = new HttpRequestHandler();
-            handler.handleRequest(client, req); // Handle the request
+            handler.handleRequest(printWriter, req); // Handle the request
           } catch (IOException e) {
             System.err.println("Error handling request: " + e.getMessage());
           } finally {

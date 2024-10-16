@@ -3,8 +3,6 @@ package org.mtcg.httpserver;
 import lombok.Getter;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,10 +14,10 @@ public class HttpRequest {
   private final String body;
   private final Map<String, String> headers;
 
-  public HttpRequest(InputStream inputStream) throws IOException {
+  public HttpRequest(BufferedReader reader) throws IOException {
     this.headers = new HashMap<>(); // Initialize the headers map
 
-    try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+    try {
       // Read the request line
       String requestLine = reader.readLine();
       if (requestLine != null) {
@@ -53,6 +51,8 @@ public class HttpRequest {
       } else {
         this.body = ""; // No body if Content-Length is absent
       }
+    } catch (IOException | NumberFormatException e) {
+      throw new RuntimeException(e);
     }
   }
 }
