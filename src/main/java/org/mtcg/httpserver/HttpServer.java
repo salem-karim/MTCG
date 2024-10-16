@@ -10,7 +10,6 @@ public class HttpServer implements Runnable {
   private static ServerSocket socket = null;
   private final int port;
   private final ExecutorService pool = Executors.newFixedThreadPool(4);
-  private final HttpRequestHandler handler = new HttpRequestHandler();
 
   public HttpServer(int port) {
     this.port = port;
@@ -26,7 +25,8 @@ public class HttpServer implements Runnable {
         System.out.println("HTTP Server accepted connection from " + client.getRemoteSocketAddress());
         pool.execute(() -> {
           try {
-            System.out.println("Handling request on thread: " + Thread.currentThread().getName());
+            final var handler = new HttpRequestHandler(client);
+            //final var handler = new HttpRequestHandler(new HttpRequest(...), client);
             handler.handleRequest();
           } catch (RuntimeException e) {
             throw new RuntimeException(e);
