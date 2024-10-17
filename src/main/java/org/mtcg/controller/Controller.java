@@ -1,15 +1,13 @@
 package org.mtcg.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Getter;
 
-public class Controller {
-  private ObjectMapper objectMapper;
+@Getter
+public abstract class Controller {
+  private final ObjectMapper objectMapper;
 
   public Controller() {
     this.objectMapper = new ObjectMapper();
-  }
-
-  public ObjectMapper getObjectMapper() {
-    return objectMapper;
   }
 }
