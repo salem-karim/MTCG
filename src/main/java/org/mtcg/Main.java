@@ -10,7 +10,6 @@ public class Main {
     var Http = new HttpServer(10001, configureRouter());
     Http.run();
   }
-  @org.jetbrains.annotations.NotNull
   private static Router configureRouter() {
     Router router = new Router();
     router.addService("/users", new UserService());

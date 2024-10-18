@@ -12,10 +12,9 @@ import java.util.HashMap;
 public class UserService implements Service {
   private final static Service DEFAULT_SERVICE = (HttpRequest req)-> new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "");
   private final HashMap<Method, Service> userMethods = new HashMap<>();
-  private final UserController userController;
 
   public UserService() {
-    this.userController = new UserController();
+    UserController userController = new UserController();
 //    userMethods.put(Method.GET, (HttpRequest req) -> {
 //      try {
 //        return this.userController.getUser(req);
