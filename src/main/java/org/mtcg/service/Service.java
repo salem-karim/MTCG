@@ -1,4 +1,4 @@
-package org.mtcg.utils;
+package org.mtcg.service;
 
 import org.mtcg.httpserver.HttpRequest;
 import org.mtcg.httpserver.HttpResponse;

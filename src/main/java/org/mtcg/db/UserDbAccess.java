@@ -1,6 +1,5 @@
-package org.mtcg.dbaccess;
+package org.mtcg.db;
 
-import org.mtcg.db.DbConnection;
 import org.mtcg.models.User;
 
 import java.sql.Connection;

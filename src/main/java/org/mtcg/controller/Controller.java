@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 public abstract class Controller {
-  private final ObjectMapper objectMapper;
+  protected final ObjectMapper objectMapper;
 
   public Controller() {
     this.objectMapper = new ObjectMapper();

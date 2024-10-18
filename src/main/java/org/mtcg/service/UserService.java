@@ -6,7 +6,6 @@ import org.mtcg.httpserver.HttpResponse;
 import org.mtcg.utils.ContentType;
 import org.mtcg.utils.HttpStatus;
 import org.mtcg.utils.Method;
-import org.mtcg.utils.Service;
 
 import java.util.HashMap;
 
@@ -24,13 +23,7 @@ public class UserService implements Service {
 //        throw new RuntimeException(e);
 //      }
 //    });
-    userMethods.put(Method.POST, (HttpRequest req) -> {
-      if (req.getPath().equals("/sessions")) {
-        return this.userController.loginUser(req); // Handle login
-      } else {
-        return this.userController.addUser(req); // Handle user registration
-      }
-    });
+    userMethods.put(Method.POST, userController::addUser);
   }
 
   @Override

@@ -1,0 +1,29 @@
+package org.mtcg.service;
+
+import org.mtcg.controller.SessionController;
+import org.mtcg.httpserver.HttpRequest;
+import org.mtcg.httpserver.HttpResponse;
+import org.mtcg.utils.ContentType;
+import org.mtcg.utils.HttpStatus;
+import org.mtcg.utils.Method;
+
+import java.util.HashMap;
+
+public class SessionService implements Service {
+  private final static Service DEFAULT_SERVICE = (HttpRequest req) -> new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "");
+  private final HashMap<Method, Service> sessionMethods = new HashMap<>();
+  private final SessionController sessionController;
+
+  public SessionService() {
+    this.sessionController = new SessionController();
+    sessionMethods.put(Method.POST, sessionController::loginUser); // Handle login
+//    sessionMethods.put(Method.DELETE, sessionController::logoutUser); // Handle logout
+//    sessionMethods.put(Method.GET, sessionController::checkSession); // Check session status
+  }
+
+  @Override
+  public HttpResponse handle(HttpRequest request) {
+    Service service = sessionMethods.getOrDefault(request.getMethod(), SessionService.DEFAULT_SERVICE);
+    return service.handle(request);
+  }
+}
