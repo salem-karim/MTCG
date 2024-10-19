@@ -1,6 +1,8 @@
 package org.mtcg.httpserver;
 
+import org.mtcg.utils.exceptions.ClientHandlingException;
 import org.mtcg.utils.Router;
+import org.mtcg.utils.exceptions.HttpRequestException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -32,35 +34,50 @@ public class HttpServer implements Runnable {
     try {
       socket = new ServerSocket(port);
       logger.info("HTTP Server started on port " + port);
+    } catch (IOException e) {
+      logger.log(Level.SEVERE, "Error starting server on port " + port, e);
+      return;
+    }
+    try {
       while (running) {
         Socket client = socket.accept();
         logger.info("Accepted connection from " + client.getRemoteSocketAddress());
 
         pool.execute(() -> {
-          try (var input = client.getInputStream();
-               var output = client.getOutputStream();
-               var inputReader = new InputStreamReader(input);
-               var bufferReader = new BufferedReader(inputReader);
-               var printWriter = new PrintWriter(output)) {
-
-            HttpRequest req = new HttpRequest(bufferReader);
-            HttpRequestHandler handler = new HttpRequestHandler(this.router);
-            handler.handleRequest(printWriter, req);
-          } catch (IOException e) {
-            logger.log(Level.SEVERE, "Error handling request", e);
-          } finally {
-            try {
-              client.close();
-            } catch (IOException e) {
-              logger.log(Level.SEVERE, "Error closing client socket", e);
-            }
+          try {
+            handleClient(client);
+          } catch (ClientHandlingException ex) {
+            logger.log(Level.SEVERE, "Error handling client", ex);
           }
         });
       }
     } catch (IOException e) {
-      logger.log(Level.SEVERE, "Error starting server", e);
+      logger.log(Level.SEVERE, "Error accepting connection", e);
     } finally {
       close();
+    }
+  }
+
+  private void handleClient(Socket client) throws ClientHandlingException {
+    try (var input = client.getInputStream();
+         var output = client.getOutputStream();
+         var inputReader = new InputStreamReader(input);
+         var bufferReader = new BufferedReader(inputReader);
+         var printWriter = new PrintWriter(output)) {
+
+      HttpRequest req = new HttpRequest(bufferReader);
+      HttpRequestHandler handler = new HttpRequestHandler(this.router);
+      handler.handleRequest(printWriter, req);
+    } catch (HttpRequestException e) {
+      throw new ClientHandlingException("Error parsing HTTP request from client " + client.getRemoteSocketAddress(), e);
+    } catch (IOException e) {
+      throw new ClientHandlingException("Error handling request from client " + client.getRemoteSocketAddress(), e);
+    } finally {
+      try {
+        client.close();
+      } catch (IOException e) {
+        logger.log(Level.SEVERE, "Error closing client socket", e);
+      }
     }
   }
 
@@ -76,7 +93,7 @@ public class HttpServer implements Runnable {
         socket.close();
       }
     } catch (IOException | InterruptedException e) {
-      logger.log(Level.SEVERE, "Error closing server", e);
+      logger.log(Level.SEVERE, "Error closing server on port " + port, e);
     }
   }
 }

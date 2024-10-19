@@ -1,6 +1,6 @@
-package org.mtcg.service;
+package org.mtcg.services;
 
-import org.mtcg.controller.UserController;
+import org.mtcg.controllers.UserController;
 import org.mtcg.httpserver.HttpRequest;
 import org.mtcg.httpserver.HttpResponse;
 import org.mtcg.utils.ContentType;

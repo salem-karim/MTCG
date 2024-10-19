@@ -1,6 +1,6 @@
 package org.mtcg.utils;
 
-import org.mtcg.service.Service;
+import org.mtcg.services.Service;
 
 public interface IRouter {
   void addService(String route, Service service);

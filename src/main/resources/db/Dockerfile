@@ -2,12 +2,12 @@
 FROM postgres:latest
 
 # Set environment variables for PostgreSQL
-ENV POSTGRES_USER=mctgdb
-ENV POSTGRES_PASSWORD=mctgadmin
-ENV POSTGRES_DB=mctg_db
+ENV POSTGRES_USER=mtcgdb
+ENV POSTGRES_PASSWORD=mtcgadmin
+ENV POSTGRES_DB=mtcg_db
 
 # Copy the SQL script to the container
-COPY mctg.sql /docker-entrypoint-initdb.d/
+COPY mtcg.sql /docker-entrypoint-initdb.d/
 
 EXPOSE 5432
 

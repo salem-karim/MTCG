@@ -1,4 +1,4 @@
-package org.mtcg.controller;
+package org.mtcg.controllers;
 
 import org.mtcg.db.UserDbAccess;
 import org.mtcg.models.User;

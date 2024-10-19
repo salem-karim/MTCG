@@ -11,11 +11,12 @@ import java.util.logging.Logger;
 
 public class UserDbAccess {
   private static final Logger logger = Logger.getLogger(UserDbAccess.class.getName());
-  Connection connection = null;
+
   public boolean addUser(User user) {
     logger.info("Attempting to add user: " + user.getUsername());
+    Connection connection = null;
     try {
-      Connection connection = DbConnection.getConnection();
+      connection = DbConnection.getConnection();
       String sql = "INSERT INTO users (username, password, coins, token) VALUES (?, ?, DEFAULT, ?)";
       PreparedStatement preparedStatement = connection.prepareStatement(sql);
       preparedStatement.setString(1, user.getUsername());

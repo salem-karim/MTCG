@@ -1,4 +1,4 @@
-package org.mtcg.controller;
+package org.mtcg.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;

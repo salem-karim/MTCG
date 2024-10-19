@@ -2,11 +2,11 @@ package org.mtcg.httpserver;
 
 import lombok.Getter;
 import org.mtcg.utils.Method;
+import org.mtcg.utils.exceptions.HttpRequestException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.*;
-
 
 @Getter
 public class HttpRequest {
@@ -17,14 +17,14 @@ public class HttpRequest {
   private final Map<String, String> headers;
 
   public String getServiceRoute() {
-    if(this.pathSegments == null || this.pathSegments.isEmpty()) {
+    if (this.pathSegments == null || this.pathSegments.isEmpty()) {
       return null;
     } else {
       return '/' + this.pathSegments.getFirst();
     }
   }
 
-  public HttpRequest(BufferedReader reader) throws IOException {
+  public HttpRequest(BufferedReader reader) throws HttpRequestException {
     this.headers = new HashMap<>(); // Initialize the headers map
 
     try {
@@ -42,8 +42,8 @@ public class HttpRequest {
         throw new IOException("Empty request line");
       }
       this.pathSegments = new ArrayList<>();
-      String[] parts = this.path.split("/");
-      for (String part : parts) {
+      String[] pathParts = this.path.split("/");
+      for (String part : pathParts) {
         if (!part.isEmpty()) {
           this.pathSegments.add(part);
         }
@@ -62,13 +62,16 @@ public class HttpRequest {
       if (contentLengthHeader != null) {
         int contentLength = Integer.parseInt(contentLengthHeader);
         char[] bodyBuffer = new char[contentLength];
-        reader.read(bodyBuffer, 0, contentLength);
+        int charsRead = reader.read(bodyBuffer, 0, contentLength);
+        if (charsRead != contentLength) {
+          throw new IOException("Failed to read the full request body");
+        }
         this.body = new String(bodyBuffer);
       } else {
         this.body = ""; // No body if Content-Length is absent
       }
     } catch (IOException | NumberFormatException e) {
-      throw new RuntimeException(e);
+      throw new HttpRequestException("Error parsing HTTP request", e);
     }
   }
 }

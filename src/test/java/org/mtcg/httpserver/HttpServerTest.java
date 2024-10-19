@@ -1,21 +1,22 @@
 package org.mtcg.httpserver;
 
-import org.junit.Before;
-import org.junit.After;
-import org.junit.Test;
 import org.mtcg.utils.Router;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+
 
 public class HttpServerTest {
   private HttpServer server;
   private Thread serverThread;
 
-  @Before
-  public void setUp() throws IOException {
+  @BeforeEach
+  public void setUp() {
     Router router = new Router();
     server = new HttpServer(8080, router);
     serverThread = new Thread(server);
@@ -42,7 +43,7 @@ public class HttpServerTest {
     assertTrue(serverThread.isAlive());
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws InterruptedException {
     if (serverThread.isAlive()) {
       server.close();

@@ -1,10 +1,11 @@
 package org.mtcg.utils;
 
-import org.junit.Test;
-import org.mtcg.service.UserService;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertNotNull;
+import org.mtcg.services.UserService;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class RouterTest {
 
