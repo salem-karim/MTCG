@@ -1,15 +1,13 @@
 package org.mtcg.httpserver;
 
+import org.junit.jupiter.api.*;
 import org.mtcg.utils.Router;
 
-import java.io.IOException;
-import java.net.ServerSocket;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URI;
 
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.AfterEach;
-
 
 public class HttpServerTest {
   private HttpServer server;
@@ -24,30 +22,48 @@ public class HttpServerTest {
   }
 
   @Test
-  public void testServerClose() throws IOException, InterruptedException {
+  public void testServerStartAndStop() throws InterruptedException {
     // Wait a bit to ensure the server is up
     Thread.sleep(1000);
 
-    // Check if the server socket is open
-    ServerSocket socket = new ServerSocket(8080);
-    assertFalse(socket.isClosed());
-    socket.close();
+    // Check if the server thread is alive
+    assertTrue(serverThread.isAlive());
 
     // Close the server
     server.close();
+    serverThread.join();
 
-    // Wait a bit to ensure the server has closed
-    Thread.sleep(1000);
-
-    // Check if the server socket is closed
-    assertTrue(serverThread.isAlive());
+    // Check if the server thread has stopped
+    assertFalse(serverThread.isAlive());
   }
 
-  @AfterEach
-  public void tearDown() throws InterruptedException {
-    if (serverThread.isAlive()) {
-      server.close();
-      serverThread.join();
+  @Test
+  public void testRequestHandling() throws IOException, InterruptedException {
+    // Wait a bit to ensure the server is up
+    Thread.sleep(1000);
+
+    // Send a test request to the server
+    URI uri = URI.create("http://localhost:8080/");
+    HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
+    connection.setRequestMethod("GET");
+
+    int responseCode = connection.getResponseCode();
+    assertEquals(200, responseCode);
+
+    // Read the response
+    BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+    String inputLine;
+    StringBuilder content = new StringBuilder();
+    while ((inputLine = in.readLine()) != null) {
+      content.append(inputLine);
     }
+    in.close();
+
+    // Verify the response content
+    assertTrue(content.toString().contains("Welcome to the homepage!"));
+
+    // Close the server
+    server.close();
+    serverThread.join();
   }
 }

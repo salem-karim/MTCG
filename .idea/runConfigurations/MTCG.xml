@@ -7,6 +7,8 @@
     <selectedOptions>
       <option name="environmentVariables" visible="false" />
     </selectedOptions>
-    <method v="2" />
+    <method v="2">
+      <option name="RunConfigurationTask" enabled="true" run_configuration_name="postgres" run_configuration_type="docker-deploy" />
+    </method>
   </configuration>
 </component>

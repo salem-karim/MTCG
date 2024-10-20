@@ -2,10 +2,7 @@ package org.mtcg.db;
 
 import org.mtcg.models.User;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,10 +11,8 @@ public class UserDbAccess {
 
   public boolean addUser(User user) {
     logger.info("Attempting to add user: " + user.getUsername());
-    Connection connection = null;
-    try {
-      connection = DbConnection.getConnection();
-      String sql = "INSERT INTO users (username, password, coins, token) VALUES (?, ?, DEFAULT, ?)";
+    try (Connection connection = DbConnection.getConnection()) {
+      String sql = "INSERT INTO users (username, password, token) VALUES (?, ?, ?)";
       PreparedStatement preparedStatement = connection.prepareStatement(sql);
       preparedStatement.setString(1, user.getUsername());
       preparedStatement.setString(2, user.getPassword());
@@ -38,16 +33,12 @@ public class UserDbAccess {
       }
       logger.log(Level.SEVERE, "SQL error while adding user: " + user.getUsername(), e);
       return false;
-    } finally {
-      DbConnection.closeConnection(connection);
     }
   }
 
   public User getUserByUsername(String username) {
     logger.info("Attempting to retrieve user by username: " + username);
-    Connection connection = null;
-    try {
-      connection = DbConnection.getConnection();
+    try (Connection connection = DbConnection.getConnection()) {
       String sql = "SELECT username, password, token FROM users WHERE username = ?";
       PreparedStatement preparedStatement = connection.prepareStatement(sql);
       preparedStatement.setString(1, username);
@@ -64,8 +55,6 @@ public class UserDbAccess {
       }
     } catch (SQLException e) {
       logger.log(Level.SEVERE, "SQL error while retrieving user: " + username, e);
-    } finally {
-      DbConnection.closeConnection(connection);
     }
     return null;
   }

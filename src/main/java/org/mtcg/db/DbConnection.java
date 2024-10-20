@@ -38,15 +38,4 @@ public class DbConnection {
     logger.info("Database connection established successfully.");
     return connection;
   }
-
-  public static void closeConnection(Connection connection) {
-    if (connection != null) {
-      try {
-        connection.close();
-        logger.info("Database connection closed successfully.");
-      } catch (SQLException e) {
-        logger.log(Level.SEVERE, "Error closing database connection", e);
-      }
-    }
-  }
 }
