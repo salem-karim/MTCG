@@ -55,6 +55,7 @@ public class HttpRequestHandler implements Runnable {
     if (request.getPath() == null) {
       response = new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "");
     } else if ("/".equals(request.getPath())) {
+      // To Test basic functionality
       response = new HttpResponse(HttpStatus.OK, ContentType.HTML, "<html><body>Welcome to the homepage!</body></html>");
     } else {
       Service service = this.router.resolve(request.getServiceRoute());

@@ -58,7 +58,6 @@ public class HttpServerTest {
       content.append(inputLine);
     }
     in.close();
-
     // Verify the response content
     assertTrue(content.toString().contains("Welcome to the homepage!"));
 
