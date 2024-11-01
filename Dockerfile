@@ -7,7 +7,7 @@ ENV POSTGRES_PASSWORD=mtcgadmin
 ENV POSTGRES_DB=mtcg_db
 
 # Copy the SQL script to the container
-COPY mtcg.sql /docker-entrypoint-initdb.d/
+COPY ./src/main/resources/db/mtcg.sql /docker-entrypoint-initdb.d/
 
 EXPOSE 5432
 

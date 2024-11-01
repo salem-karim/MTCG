@@ -1,13 +1,18 @@
 package org.mtcg.httpserver;
 
-import org.junit.jupiter.api.*;
-import org.mtcg.utils.Router;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mtcg.utils.Router;
 
 public class HttpServerTest {
   private HttpServer server;

@@ -1,10 +1,9 @@
 package org.mtcg.db;
 
-import org.mtcg.models.User;
-
 import java.sql.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.mtcg.models.User;
 
 public class UserDbAccess {
   private static final Logger logger = Logger.getLogger(UserDbAccess.class.getName());

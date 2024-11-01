@@ -1,15 +1,14 @@
 package org.mtcg.httpserver;
 
+import java.io.*;
+import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.mtcg.services.Service;
 import org.mtcg.utils.ContentType;
 import org.mtcg.utils.HttpStatus;
 import org.mtcg.utils.Router;
 import org.mtcg.utils.exceptions.HttpRequestException;
-
-import java.io.*;
-import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class HttpRequestHandler implements Runnable {
   private static final Logger logger = Logger.getLogger(HttpRequestHandler.class.getName());
@@ -24,7 +23,8 @@ public class HttpRequestHandler implements Runnable {
   @Override
   public void run() {
     try (PrintWriter writer = new PrintWriter(clientSocket.getOutputStream(), true);
-         BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
+        BufferedReader reader =
+            new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
 
       HttpRequest request = parseRequest(reader);
       handleRequest(writer, request);
@@ -56,13 +56,18 @@ public class HttpRequestHandler implements Runnable {
       response = new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "");
     } else if ("/".equals(request.getPath())) {
       // To Test basic functionality
-      response = new HttpResponse(HttpStatus.OK, ContentType.HTML, "<html><body>Welcome to the homepage!</body></html>");
+      response =
+          new HttpResponse(
+              HttpStatus.OK,
+              ContentType.HTML,
+              "<html><body>Welcome to the homepage!</body></html>");
     } else {
       Service service = this.router.resolve(request.getServiceRoute());
       if (service != null) {
         response = service.handle(request);
       } else {
-        response = new HttpResponse(HttpStatus.NOT_FOUND, ContentType.JSON, "{\"error\":\"Not Found\"}");
+        response =
+            new HttpResponse(HttpStatus.NOT_FOUND, ContentType.JSON, "{\"error\":\"Not Found\"}");
       }
     }
     writer.write(response.getResponse());

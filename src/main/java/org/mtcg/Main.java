@@ -14,7 +14,18 @@ public class Main {
   private static Router configureRouter() {
     Router router = new Router();
     router.addService("/users", new UserService());
+    // router.addService("/users/{username}", new UserService());
     router.addService("/sessions", new SessionService());
+    // router.addService("/packages", new PackageService);
+    // router.addService("/transactions/packages", new TransactionService);
+    // router.addService("/cards", new CardService);
+    // Also has routers like /deck?format=plain
+    // router.addService("/deck", new DeckService);
+    // router.addService("/stats", new StatService);
+    // router.addService("/scoreboard", new ScoreBoardService);
+    // router.addService("/battles", new BattleService);
+    // router.addService("/tradings", new TradingService);
+    // router.addService("/tradings/{UUID}", new TradingService);
     return router;
   }
 }
