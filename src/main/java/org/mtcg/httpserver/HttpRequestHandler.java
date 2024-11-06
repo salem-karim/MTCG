@@ -60,7 +60,7 @@ public class HttpRequestHandler implements Runnable {
           ContentType.HTML,
           "<html><body>Welcome to the homepage!</body></html>");
     } else {
-      final Service service = this.router.resolve(request.getServiceRoute());
+      final var service = this.router.resolve(request.getServiceRoute());
       if (service != null) {
         response = service.handle(request);
       } else {
