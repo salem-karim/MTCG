@@ -10,20 +10,22 @@ import org.mtcg.utils.Method;
 import java.util.HashMap;
 
 public class SessionService implements Service {
-  private final static Service DEFAULT_SERVICE =
-          (HttpRequest req) -> new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "");
+  private final static Service DEFAULT_SERVICE = (final HttpRequest req) -> new HttpResponse(HttpStatus.BAD_REQUEST,
+      ContentType.JSON, "");
   private final HashMap<Method, Service> sessionMethods = new HashMap<>();
 
   public SessionService() {
-    SessionController sessionController = new SessionController();
+    final SessionController sessionController = new SessionController();
     sessionMethods.put(Method.POST, sessionController::loginUser); // Handle login
-//    sessionMethods.put(Method.DELETE, sessionController::logoutUser); // Handle logout
-//    sessionMethods.put(Method.GET, sessionController::checkSession); // Check session status
+    // sessionMethods.put(Method.DELETE, sessionController::logoutUser); // Handle
+    // logout
+    // sessionMethods.put(Method.GET, sessionController::checkSession); // Check
+    // session status
   }
 
   @Override
-  public HttpResponse handle(HttpRequest request) {
-    Service service = sessionMethods.getOrDefault(request.getMethod(), SessionService.DEFAULT_SERVICE);
+  public HttpResponse handle(final HttpRequest request) {
+    final Service service = sessionMethods.getOrDefault(request.getMethod(), SessionService.DEFAULT_SERVICE);
     return service.handle(request);
   }
 }

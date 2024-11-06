@@ -7,7 +7,8 @@ import org.mindrot.jbcrypt.BCrypt;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
 public class User {
   private String token;
   private String username;
@@ -18,8 +19,8 @@ public class User {
 
   // Constructor for ObjectMapper
   @JsonCreator
-  public User(@JsonProperty("Username") String name,
-              @JsonProperty("Password") String Password) {
+  public User(@JsonProperty("Username") final String name,
+      @JsonProperty("Password") final String Password) {
     this.token = name + "-mtcgToken"; // Token naming convention
     this.username = name;
     this.password = hashPassword(Password); // Hash the password upon user creation
@@ -27,7 +28,7 @@ public class User {
   }
 
   // Additional constructor for retrieving from the database
-  public User(String username, String token, String Password) {
+  public User(final String username, final String token, final String Password) {
     this.token = token;
     this.username = username;
     this.password = Password;
@@ -35,13 +36,13 @@ public class User {
   }
 
   // Method to hash the password
-  private String hashPassword(String password) {
+  private String hashPassword(final String password) {
     return BCrypt.hashpw(password, BCrypt.gensalt());
   }
 
   // Method to verify the password during login
   @JsonIgnore // Ignore this method during serialization
-  public boolean verifyPassword(String password) {
+  public boolean verifyPassword(final String password) {
     return BCrypt.checkpw(password, this.password);
   }
 }

@@ -15,13 +15,13 @@ public class SessionController extends Controller {
     this.userDbAccess = new UserDbAccess();
   }
 
-  public HttpResponse loginUser(HttpRequest request) {
+  public HttpResponse loginUser(final HttpRequest request) {
     try {
-      String body = request.getBody();
-      String username = body.split("\"Username\":\"")[1].split("\"")[0];
-      String providedPassword = body.split("\"Password\":\"")[1].split("\"")[0];
+      final String body = request.getBody();
+      final String username = body.split("\"Username\":\"")[1].split("\"")[0];
+      final String providedPassword = body.split("\"Password\":\"")[1].split("\"")[0];
 
-      User userFromDb = userDbAccess.getUserByUsername(username);
+      final User userFromDb = userDbAccess.getUserByUsername(username);
 
       if (userFromDb != null && userFromDb.verifyPassword(providedPassword)) {
         return new HttpResponse(HttpStatus.OK, ContentType.JSON, userFromDb.getToken());

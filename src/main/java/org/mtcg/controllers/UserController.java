@@ -17,18 +17,18 @@ public class UserController extends Controller {
   }
 
   // Method to add a user
-  public HttpResponse addUser(HttpRequest request) {
+  public HttpResponse addUser(final HttpRequest request) {
     try {
       // Assuming the request body contains JSON with user details
-      User user = getObjectMapper().readValue(request.getBody(), User.class);
-      boolean added = userDbAccess.addUser(user);
+      final User user = getObjectMapper().readValue(request.getBody(), User.class);
+      final boolean added = userDbAccess.addUser(user);
 
       if (added) {
         return new HttpResponse(HttpStatus.CREATED, ContentType.JSON, "User created successfully");
       } else {
         return new HttpResponse(HttpStatus.CONFLICT, ContentType.JSON, "User already exists");
       }
-    } catch (JsonProcessingException e) {
+    } catch (final JsonProcessingException e) {
       return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Invalid request format");
     }
   }

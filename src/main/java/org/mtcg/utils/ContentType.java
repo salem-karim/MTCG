@@ -7,7 +7,7 @@ public enum ContentType {
 
   public final String type;
 
-  ContentType(String type) {
+  ContentType(final String type) {
     this.type = type;
   }
 }

@@ -9,17 +9,17 @@ public class Router implements IRouter {
   private final Map<String, Service> services = new HashMap<>();
 
   @Override
-  public void addService(String route, Service service) {
+  public void addService(final String route, final Service service) {
     this.services.put(route, service);
   }
 
   @Override
-  public void removeService(String route) {
+  public void removeService(final String route) {
     this.services.remove(route);
   }
 
   @Override
-  public Service resolve(String route) {
+  public Service resolve(final String route) {
     return this.services.get(route);
   }
 }

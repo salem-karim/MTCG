@@ -2,7 +2,7 @@
 package org.mtcg.utils.exceptions;
 
 public class HttpRequestException extends Exception {
-  public HttpRequestException(String message, Throwable cause) {
+  public HttpRequestException(final String message, final Throwable cause) {
     super(message, cause);
   }
 }

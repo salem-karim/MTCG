@@ -18,7 +18,7 @@ public class HttpServer implements Runnable {
   private final ExecutorService threadPool = Executors.newCachedThreadPool();
   private volatile boolean running = true;
 
-  public HttpServer(int port, Router router) {
+  public HttpServer(final int port, final Router router) {
     this.port = port;
     this.router = router;
   }
@@ -31,10 +31,10 @@ public class HttpServer implements Runnable {
 
       while (running) {
         try {
-          Socket clientSocket = serverSocket.accept();
+          final Socket clientSocket = serverSocket.accept();
           logger.info("Accepted connection from " + clientSocket.getRemoteSocketAddress());
           threadPool.submit(new HttpRequestHandler(clientSocket, router));
-        } catch (IOException e) {
+        } catch (final IOException e) {
           if (running) {
             logger.log(Level.SEVERE, "Error accepting connection", e);
           } else {
@@ -42,7 +42,7 @@ public class HttpServer implements Runnable {
           }
         }
       }
-    } catch (IOException e) {
+    } catch (final IOException e) {
       logger.log(Level.SEVERE, "Could not start server", e);
     } finally {
       close();
@@ -50,12 +50,13 @@ public class HttpServer implements Runnable {
   }
 
   public void close() {
-    if (!running) return;
+    if (!running)
+      return;
     running = false;
     if (serverSocket != null && !serverSocket.isClosed()) {
       try {
         serverSocket.close();
-      } catch (IOException e) {
+      } catch (final IOException e) {
         logger.log(Level.SEVERE, "Error closing server socket", e);
       }
     }

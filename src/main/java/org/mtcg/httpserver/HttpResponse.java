@@ -15,7 +15,7 @@ public class HttpResponse {
   private final String host;
   private final String response;
 
-  public HttpResponse(HttpStatus status, ContentType contentType, String body) {
+  public HttpResponse(final HttpStatus status, final ContentType contentType, final String body) {
     this.statusCode = status.code;
     this.contentType = contentType.toString();
     this.body = body;
@@ -24,9 +24,9 @@ public class HttpResponse {
     this.host = "127.0.0.1";
     this.contentLength = body.length();
     response = version + " " + statusCode + " " + statusMessage + "\r\n" +
-            "Host: " + host + "\r\n" +
-            "Content-type: " + contentType + "\r\n" +
-            "Content-length: " + contentLength + "\r\n" +
-            "\r\n" + this.body + "\n\n";
+        "Host: " + host + "\r\n" +
+        "Content-type: " + contentType + "\r\n" +
+        "Content-length: " + contentLength + "\r\n" +
+        "\r\n" + this.body + "\n\n";
   }
 }

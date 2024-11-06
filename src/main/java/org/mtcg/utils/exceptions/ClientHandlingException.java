@@ -1,7 +1,7 @@
 package org.mtcg.utils.exceptions;
 
 public class ClientHandlingException extends Exception {
-  public ClientHandlingException(String message, Throwable cause) {
+  public ClientHandlingException(final String message, final Throwable cause) {
     super(message, cause);
   }
 }

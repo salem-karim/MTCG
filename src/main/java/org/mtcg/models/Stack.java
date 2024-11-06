@@ -9,10 +9,12 @@ public class Stack {
   public Stack() {
     cards = new ArrayList<>();
   }
-  public void addCard(Card card) {
+
+  public void addCard(final Card card) {
     cards.add(card);
   }
-  public void removeCard(Card card) {
+
+  public void removeCard(final Card card) {
     cards.remove(card);
   }
 }
