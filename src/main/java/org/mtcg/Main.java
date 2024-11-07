@@ -11,6 +11,7 @@ public class Main {
     Http.run();
   }
 
+  // TODO: Make the Router Dynamic
   private static Router configureRouter() {
     Router router = new Router();
     router.addService("/users", new UserService());

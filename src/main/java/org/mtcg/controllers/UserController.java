@@ -1,11 +1,12 @@
 package org.mtcg.controllers;
 
 import org.mtcg.db.UserDbAccess;
-import org.mtcg.models.User;
 import org.mtcg.httpserver.HttpRequest;
 import org.mtcg.httpserver.HttpResponse;
-import org.mtcg.utils.HttpStatus;
+import org.mtcg.models.User;
 import org.mtcg.utils.ContentType;
+import org.mtcg.utils.HttpStatus;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class UserController extends Controller {
@@ -24,12 +25,12 @@ public class UserController extends Controller {
       final boolean added = userDbAccess.addUser(user);
 
       if (added) {
-        return new HttpResponse(HttpStatus.CREATED, ContentType.JSON, "User created successfully");
+        return new HttpResponse(HttpStatus.CREATED, ContentType.JSON, "User created successfully\n");
       } else {
-        return new HttpResponse(HttpStatus.CONFLICT, ContentType.JSON, "User already exists");
+        return new HttpResponse(HttpStatus.CONFLICT, ContentType.JSON, "User already exists\n");
       }
     } catch (final JsonProcessingException e) {
-      return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Invalid request format");
+      return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Invalid request format\n");
     }
   }
 }

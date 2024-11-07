@@ -15,7 +15,7 @@ public class HttpServer implements Runnable {
   private final int port;
   private final Router router;
   private ServerSocket serverSocket;
-  private final ExecutorService threadPool = Executors.newCachedThreadPool();
+  private final ExecutorService threadPool = Executors.newFixedThreadPool(12);
   private volatile boolean running = true;
 
   public HttpServer(final int port, final Router router) {

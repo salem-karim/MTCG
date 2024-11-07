@@ -1,38 +1,47 @@
 package org.mtcg.models;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.UUID;
+
 import org.mindrot.jbcrypt.BCrypt;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.uuid.Generators;
+
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class User {
-  private String token;
+  @JsonProperty("Id")
+  private UUID id;
+  @JsonProperty("Username")
   private String username;
 
   @JsonIgnore // Ignore this field during serialization/deserialization
   private String password; // This should be hashed
-  private int coins;
+  private int coins = 20;
+  private String token;
 
   // Constructor for ObjectMapper
+
   @JsonCreator
-  public User(@JsonProperty("Username") final String name,
-      @JsonProperty("Password") final String Password) {
-    this.token = name + "-mtcgToken"; // Token naming convention
-    this.username = name;
-    this.password = hashPassword(Password); // Hash the password upon user creation
-    this.coins = 20; // Default coins
+  public User(@JsonProperty("Username") final String username,
+      @JsonProperty("Password") final String password) {
+    this.id = Generators.timeBasedGenerator().generate();
+    this.token = username + "-mtcgToken"; // Token naming convention
+    this.username = username;
+    this.password = hashPassword(password); // Hash the password upon user creation
   }
 
   // Additional constructor for retrieving from the database
-  public User(final String username, final String token, final String Password) {
+  public User(final String username, final String token, final String Password, final UUID id) {
+    this.id = id;
     this.token = token;
     this.username = username;
     this.password = Password;
-    this.coins = 20; // Default coins
   }
 
   // Method to hash the password

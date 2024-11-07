@@ -1,10 +1,13 @@
 package org.mtcg.httpserver;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.mtcg.services.Service;
+
 import org.mtcg.utils.ContentType;
 import org.mtcg.utils.HttpStatus;
 import org.mtcg.utils.Router;
@@ -64,7 +67,7 @@ public class HttpRequestHandler implements Runnable {
       if (service != null) {
         response = service.handle(request);
       } else {
-        response = new HttpResponse(HttpStatus.NOT_FOUND, ContentType.JSON, "{\"error\":\"Not Found\"}");
+        response = new HttpResponse(HttpStatus.NOT_FOUND, ContentType.JSON, "{\"error\":\"Not Found\"}\n");
       }
     }
     writer.write(response.getResponse());

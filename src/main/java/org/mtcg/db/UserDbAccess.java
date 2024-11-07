@@ -1,6 +1,7 @@
 package org.mtcg.db;
 
 import java.sql.*;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.mtcg.models.User;
@@ -11,11 +12,12 @@ public class UserDbAccess {
   public boolean addUser(final User user) {
     logger.info("Attempting to add user: " + user.getUsername());
     try (Connection connection = DbConnection.getConnection()) {
-      final String sql = "INSERT INTO users (username, password, token) VALUES (?, ?, ?)";
+      final String sql = "INSERT INTO users (id, username, password, token) VALUES (?, ?, ?, ?)";
       final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-      preparedStatement.setString(1, user.getUsername());
-      preparedStatement.setString(2, user.getPassword());
-      preparedStatement.setString(3, user.getToken());
+      preparedStatement.setObject(1, user.getId());
+      preparedStatement.setString(2, user.getUsername());
+      preparedStatement.setString(3, user.getPassword());
+      preparedStatement.setString(4, user.getToken());
 
       final int affectedRows = preparedStatement.executeUpdate();
       if (affectedRows > 0) {
@@ -38,7 +40,7 @@ public class UserDbAccess {
   public User getUserByUsername(final String username) {
     logger.info("Attempting to retrieve user by username: " + username);
     try (Connection connection = DbConnection.getConnection()) {
-      final String sql = "SELECT username, password, token FROM users WHERE username = ?";
+      final String sql = "SELECT id, username, password, token FROM users WHERE username = ?";
       final PreparedStatement preparedStatement = connection.prepareStatement(sql);
       preparedStatement.setString(1, username);
 
@@ -46,8 +48,9 @@ public class UserDbAccess {
         if (resultSet.next()) {
           final String token = resultSet.getString("token");
           final String hashedPassword = resultSet.getString("password");
+          final UUID id = (UUID) resultSet.getObject("id");
           logger.info("User retrieved successfully: " + username);
-          return new User(username, token, hashedPassword);
+          return new User(username, token, hashedPassword, id);
         } else {
           logger.warning("User not found: " + username);
         }
