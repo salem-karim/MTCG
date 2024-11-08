@@ -7,7 +7,6 @@ import org.mindrot.jbcrypt.BCrypt;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.uuid.Generators;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -30,7 +29,7 @@ public class User {
   @JsonCreator
   public User(@JsonProperty("Username") final String username,
       @JsonProperty("Password") final String password) {
-    this.id = Generators.timeBasedGenerator().generate();
+    this.id = UUID.randomUUID();
     this.token = username + "-mtcgToken"; // Token naming convention
     this.username = username;
     this.password = hashPassword(password); // Hash the password upon user creation

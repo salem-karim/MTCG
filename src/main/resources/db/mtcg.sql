@@ -9,9 +9,11 @@ DROP TABLE IF EXISTS packages CASCADE;
 DROP TABLE IF EXISTS stacks CASCADE;
 DROP TABLE IF EXISTS cards CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
+-- Add Extension for generating UUIDv4
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- Create Users Table
 CREATE TABLE users (
-    id uuid PRIMARY KEY,
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     username varchar(50) UNIQUE NOT NULL,
     password varchar(100) NOT NULL,
     coins int DEFAULT 20 NOT NULL CHECK (coins >= 0),
@@ -20,9 +22,9 @@ CREATE TABLE users (
 );
 -- Create Cards Table
 CREATE TABLE cards (
-    id uuid PRIMARY KEY,
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     name varchar(50) NOT NULL,
-    damage int CHECK (damage >= 0) NOT NULL,
+    damage float CHECK (damage >= 0) NOT NULL,
     element_type varchar(20) CHECK (
         element_type IN ('fire', 'water', 'normal')
     ) NOT NULL,
@@ -30,7 +32,7 @@ CREATE TABLE cards (
 );
 -- Create Stacks Table (to hold all cards of a user)
 CREATE TABLE stacks (
-    id uuid PRIMARY KEY,
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id uuid UNIQUE NOT NULL REFERENCES users (id) ON DELETE CASCADE
 );
 CREATE TABLE stack_cards (
@@ -40,7 +42,7 @@ CREATE TABLE stack_cards (
 );
 -- Create Packages Table (to define card packages)
 CREATE TABLE packages (
-    id uuid PRIMARY KEY,
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id uuid REFERENCES users (id) ON DELETE CASCADE
 );
 CREATE TABLE package_cards (
@@ -50,7 +52,7 @@ CREATE TABLE package_cards (
 );
 -- Create Decks Table (to define the user's active deck)
 CREATE TABLE decks (
-    id uuid PRIMARY KEY,
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id uuid REFERENCES users (id) ON DELETE CASCADE,
     card_id uuid REFERENCES cards (id) ON DELETE CASCADE
 );
@@ -61,7 +63,7 @@ CREATE TABLE deck_cards (
 );
 -- Create Battles Table (to log battles)
 CREATE TABLE battles (
-    id uuid PRIMARY KEY,
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     user1_id uuid REFERENCES users (id) ON DELETE CASCADE,
     user2_id uuid REFERENCES users (id) ON DELETE CASCADE,
     result varchar(20) CHECK (result IN ('win', 'lose', 'draw')),
@@ -70,7 +72,7 @@ CREATE TABLE battles (
 );
 -- Create Trading Deals Table (to manage trading)
 CREATE TABLE trading_deals (
-    id uuid PRIMARY KEY,
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id uuid REFERENCES users (id) ON DELETE CASCADE,
     card_id uuid REFERENCES cards (id) ON DELETE CASCADE,
     required_card_type varchar(20) CHECK (

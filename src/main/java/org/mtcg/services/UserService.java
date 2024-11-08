@@ -3,19 +3,12 @@ package org.mtcg.services;
 import org.mtcg.controllers.UserController;
 import org.mtcg.httpserver.HttpRequest;
 import org.mtcg.httpserver.HttpResponse;
-import org.mtcg.utils.ContentType;
-import org.mtcg.utils.HttpStatus;
 import org.mtcg.utils.Method;
 
-import java.util.HashMap;
-
-public class UserService implements Service {
-  private final static Service DEFAULT_SERVICE = (final HttpRequest req) -> new HttpResponse(HttpStatus.BAD_REQUEST,
-      ContentType.JSON, "");
-  private final HashMap<Method, Service> userMethods = new HashMap<>();
+public class UserService extends DefaultService {
 
   public UserService() {
-    final UserController userController = new UserController();
+    final var userController = new UserController();
     // userMethods.put(Method.GET, (HttpRequest req) -> {
     // try {
     // return this.userController.getUser(req);
@@ -23,12 +16,12 @@ public class UserService implements Service {
     // throw new RuntimeException(e);
     // }
     // });
-    userMethods.put(Method.POST, userController::addUser);
+    methods.put(Method.POST, userController::addUser);
   }
 
   @Override
-  public HttpResponse handle(final HttpRequest request) {
-    final Service service = userMethods.getOrDefault(request.getMethod(), UserService.DEFAULT_SERVICE);
+  public HttpResponse handle(HttpRequest request) {
+    final Service service = methods.getOrDefault(request.getMethod(), this::defaultResponse);
     return service.handle(request);
   }
 }

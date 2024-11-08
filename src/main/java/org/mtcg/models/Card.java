@@ -2,33 +2,39 @@ package org.mtcg.models;
 
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Getter;
 
 @Getter
 public class Card {
-  enum cardType {
+  public enum CardType {
     MONSTER,
     SPELL,
-    NORMAL
   }
 
-  enum element {
+  public enum Element {
     WATER,
     FIRE,
     NORMAL
   }
 
-  private final UUID id;
-  private final String name;
-  private final float damage;
-  private final cardType cardType;
-  private final element element;
+  private UUID id;
+  private String name;
+  private float damage;
+  private CardType cardType;
+  private Element element;
 
-  public Card(final UUID id, final String name, final element element, final cardType cardType, final float damage) {
+  // Constructor with @JsonProperty annotations on parameters
+  public Card(
+      @JsonProperty("Id") UUID id,
+      @JsonProperty("Name") String name,
+      @JsonProperty("Damage") float damage) {
     this.id = id;
     this.name = name;
-    this.element = element;
-    this.cardType = cardType;
     this.damage = damage;
+
+    this.cardType = (name.contains("Spell")) ? CardType.SPELL : CardType.MONSTER;
+    this.element = name.contains("Water") ? Element.WATER : name.contains("Fire") ? Element.FIRE : Element.NORMAL;
   }
 }

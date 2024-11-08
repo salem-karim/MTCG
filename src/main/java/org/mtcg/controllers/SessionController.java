@@ -28,6 +28,7 @@ public class SessionController extends Controller {
         return new HttpResponse(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Wrong login credentials\n");
       }
     } catch (final JsonProcessingException e) {
+      System.out.println(e);
       return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Invalid request format\n");
     }
   }

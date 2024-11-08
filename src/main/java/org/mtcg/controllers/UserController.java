@@ -30,6 +30,7 @@ public class UserController extends Controller {
         return new HttpResponse(HttpStatus.CONFLICT, ContentType.JSON, "User already exists\n");
       }
     } catch (final JsonProcessingException e) {
+      System.out.println(e);
       return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Invalid request format\n");
     }
   }
