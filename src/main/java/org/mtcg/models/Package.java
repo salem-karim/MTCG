@@ -11,9 +11,11 @@ public class Package {
   private UUID id;
   private UUID userId;
 
-  public Package(final Card[] cards) {
+  public Package(final Card[] cards, final UUID userId) {
     if (cards.length != PACKAGE_SIZE)
       throw new IllegalArgumentException("A package must contain exactly " + PACKAGE_SIZE + " cards.");
     this.cards = cards;
+    this.userId = userId;
+    this.id = UUID.randomUUID();
   }
 }

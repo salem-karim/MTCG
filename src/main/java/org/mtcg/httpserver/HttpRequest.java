@@ -49,6 +49,7 @@ public class HttpRequest {
         }
       }
       // Read headers
+      // TODO: Check if it reads all headers
       String headerLine;
       while (!(headerLine = reader.readLine()).isEmpty()) {
         final String[] headerParts = headerLine.split(": ", 2);

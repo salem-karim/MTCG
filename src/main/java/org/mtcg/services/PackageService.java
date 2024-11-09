@@ -9,7 +9,7 @@ public class PackageService extends DefaultService {
 
   public PackageService() {
     final var packageController = new PackageController();
-    methods.put(Method.GET, packageController::addPackage);
+    methods.put(Method.POST, packageController::addPackage);
   }
 
   @Override
