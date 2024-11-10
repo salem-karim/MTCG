@@ -20,8 +20,11 @@ public class SessionController extends Controller {
 
   public HttpResponse loginUser(final HttpRequest request) {
     try {
+      // Use custom Class to Contsruct User Information without hashing to verify
+      // session
       final var user = getObjectMapper().readValue(request.getBody(), LoginCredentials.class);
       final User userFromDb = userDbAccess.getUserByUsername(user.getUsername());
+      // Get User from the DB and verify passwords && Handle possible Errors
       if (userFromDb != null && userFromDb.verifyPassword(user.getPassword())) {
         return new HttpResponse(HttpStatus.OK, ContentType.JSON, userFromDb.getToken() + '\n');
       } else {

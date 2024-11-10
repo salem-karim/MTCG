@@ -10,10 +10,11 @@ public class UserDbAccess {
   private static final Logger logger = Logger.getLogger(UserDbAccess.class.getName());
 
   public boolean addUser(final User user) {
-    logger.info("Attempting to add user: " + user.getUsername());
+    // The usual get Connection make a prepareStatement execute it
     try (Connection connection = DbConnection.getConnection()) {
       final String sql = "INSERT INTO users (id, username, password, token) VALUES (?, ?, ?, ?)";
       final PreparedStatement preparedStatement = connection.prepareStatement(sql);
+      // Set all the VALUES of the Statement
       preparedStatement.setObject(1, user.getId());
       preparedStatement.setString(2, user.getUsername());
       preparedStatement.setString(3, user.getPassword());
@@ -38,7 +39,6 @@ public class UserDbAccess {
   }
 
   public User getUserByUsername(final String username) {
-    logger.info("Attempting to retrieve user by username: " + username);
     try (Connection connection = DbConnection.getConnection()) {
       final String sql = "SELECT id, username, password, token FROM users WHERE username = ?";
       final PreparedStatement preparedStatement = connection.prepareStatement(sql);

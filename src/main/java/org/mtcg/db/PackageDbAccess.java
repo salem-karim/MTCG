@@ -16,7 +16,7 @@ public class PackageDbAccess {
 
   public boolean addPackage(final Package pkg) {
     logger.info("Attempting to add a new package");
-    Connection connection = null; // Declare connection outside of try block
+    Connection connection = null;
 
     try {
       connection = DbConnection.getConnection();
@@ -33,9 +33,10 @@ public class PackageDbAccess {
         }
       }
 
-      // Insert cards into the cards table
+      // Insert cards into the cards table using Batches
       final String insertCardSQL = "INSERT INTO cards (id, name, damage, element_type, card_type) VALUES (?, ?, ?, ?, ?)";
       try (var cardStmt = connection.prepareStatement(insertCardSQL)) {
+        // Set Values of stamement in a loop
         for (final var card : pkg.getCards()) {
           cardStmt.setObject(1, card.getId());
           cardStmt.setString(2, card.getName());
@@ -50,6 +51,7 @@ public class PackageDbAccess {
       // Insert foreign keys into package_cards table
       final String insertPackageCardsSQL = "INSERT INTO package_cards (package_id, card_id) VALUES (?, ?)";
       try (var packageCardStmt = connection.prepareStatement(insertPackageCardsSQL)) {
+        // Again for every card of the Package
         for (final var card : pkg.getCards()) {
           packageCardStmt.setObject(1, pkg.getId());
           packageCardStmt.setObject(2, card.getId());
@@ -85,10 +87,12 @@ public class PackageDbAccess {
   }
 
   public UUID getUserId(final Map<String, String> headers) throws HttpRequestException {
+    // get token from the header labeled with "Authorization"
     final String authorization = headers.get("Authorization");
     if (authorization != null && authorization.startsWith("Bearer ")) {
       final String token = authorization.substring(7);
       try (Connection connection = DbConnection.getConnection()) {
+        // Then get its userId using the token
         final String sql = "SELECT id FROM users where token = ?";
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
         preparedStatement.setString(1, token);

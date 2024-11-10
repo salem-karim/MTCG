@@ -11,10 +11,8 @@ import org.mtcg.utils.Method;
 public abstract class DefaultService implements Service {
   protected final HashMap<Method, Service> methods = new HashMap<>();
 
-  // Default behavior for unhandled requests
+  // Default Response for unhandled Requests
   protected HttpResponse defaultResponse(HttpRequest request) {
-    return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "");
+    return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Bad Request");
   }
-
-  // Optional: other shared methods for subclasses to use if needed
 }

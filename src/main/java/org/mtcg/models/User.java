@@ -19,23 +19,24 @@ public class User {
   @JsonProperty("Username")
   private String username;
 
-  @JsonIgnore // Ignore this field during serialization/deserialization
-  private String password; // This should be hashed
+  @JsonIgnore
+  private String password;
   private int coins = 20;
   private String token;
 
   // Constructor for ObjectMapper
-
   @JsonCreator
   public User(@JsonProperty("Username") final String username,
       @JsonProperty("Password") final String password) {
     this.id = UUID.randomUUID();
-    this.token = username + "-mtcgToken"; // Token naming convention
+    this.token = username + "-mtcgToken";
     this.username = username;
-    this.password = hashPassword(password); // Hash the password upon user creation
+    // Hash the password
+    this.password = hashPassword(password);
   }
 
   // Additional constructor for retrieving from the database
+  @JsonIgnore
   public User(final String username, final String token, final String Password, final UUID id) {
     this.id = id;
     this.token = token;
@@ -49,7 +50,7 @@ public class User {
   }
 
   // Method to verify the password during login
-  @JsonIgnore // Ignore this method during serialization
+  @JsonIgnore
   public boolean verifyPassword(final String password) {
     return BCrypt.checkpw(password, this.password);
   }

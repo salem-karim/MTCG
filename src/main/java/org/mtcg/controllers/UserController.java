@@ -20,10 +20,12 @@ public class UserController extends Controller {
   // Method to add a user
   public HttpResponse addUser(final HttpRequest request) {
     try {
-      // Assuming the request body contains JSON with user details
+      // Construct the User using the ObjectMapper which selects the correct
+      // Constructor
       final User user = getObjectMapper().readValue(request.getBody(), User.class);
       final boolean added = userDbAccess.addUser(user);
 
+      // Handle Errors
       if (added) {
         return new HttpResponse(HttpStatus.CREATED, ContentType.JSON, "User created successfully\n");
       } else {

@@ -33,15 +33,17 @@ public class HttpRequest {
       if (requestLine != null) {
         final String[] parts = requestLine.split(" ");
         if (parts.length >= 2) {
-          this.method = Method.valueOf(parts[0].toUpperCase(Locale.ROOT)); // e.g., "POST"
-          this.path = parts[1]; // e.g., "/packages"
+          // e.g., "POST"
+          this.method = Method.valueOf(parts[0].toUpperCase(Locale.ROOT));
+          // e.g., "/packages"
+          this.path = parts[1];
         } else {
           throw new IOException("Invalid HTTP request line");
         }
       } else {
         throw new IOException("Empty request line");
       }
-      this.pathSegments = new ArrayList<>();
+      this.pathSegments = new LinkedList<>();
       final String[] pathParts = this.path.split("/");
       for (final String part : pathParts) {
         if (!part.isEmpty()) {
@@ -49,12 +51,12 @@ public class HttpRequest {
         }
       }
       // Read headers
-      // TODO: Check if it reads all headers
       String headerLine;
       while (!(headerLine = reader.readLine()).isEmpty()) {
         final String[] headerParts = headerLine.split(": ", 2);
         if (headerParts.length == 2) {
-          headers.put(headerParts[0], headerParts[1]); // Store header
+          // Store header in HashMap
+          headers.put(headerParts[0], headerParts[1]);
         }
       }
 
@@ -62,17 +64,37 @@ public class HttpRequest {
       final String contentLengthHeader = headers.get("Content-Length");
       if (contentLengthHeader != null) {
         final int contentLength = Integer.parseInt(contentLengthHeader);
+        // read body from the buffer which is as long as contentlength
         final char[] bodyBuffer = new char[contentLength];
         final int charsRead = reader.read(bodyBuffer, 0, contentLength);
+        // Verify that the whole Body is read
         if (charsRead != contentLength) {
           throw new IOException("Failed to read the full request body");
         }
         this.body = new String(bodyBuffer);
       } else {
-        this.body = ""; // No body if Content-Length is absent
+        // No body if Content-Length is absent
+        this.body = "";
       }
     } catch (IOException | NumberFormatException e) {
       throw new HttpRequestException("Error parsing HTTP request", e);
+    }
+  }
+
+  // Constructor for Unit tests
+  public HttpRequest(Method method, String path, String body) {
+    this.method = method;
+    this.path = path;
+    this.body = body;
+    this.headers = new HashMap<>();
+    this.pathSegments = new ArrayList<>();
+
+    // Split path into segments
+    String[] pathParts = path.split("/");
+    for (String part : pathParts) {
+      if (!part.isEmpty()) {
+        this.pathSegments.add(part);
+      }
     }
   }
 }

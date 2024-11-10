@@ -17,10 +17,11 @@ public class DbConnection {
   private static String PASSWORD;
 
   static {
+    // Get DB authentication data from resource JSON file
     try (InputStream inputStream = DbConnection.class.getClassLoader().getResourceAsStream("db/mtcg.json")) {
       if (inputStream == null) {
         throw new IllegalArgumentException("Database configuration file not found.");
-      }
+      } // Set variables from JSON File
       final String content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
       final JSONObject json = new JSONObject(content);
       DB_URL = json.getString("db_url");
@@ -33,9 +34,7 @@ public class DbConnection {
   }
 
   public static Connection getConnection() throws SQLException {
-    logger.info("Attempting to establish a database connection.");
     final Connection connection = DriverManager.getConnection(DB_URL, USER, PASSWORD);
-    logger.info("Database connection established successfully.");
     return connection;
   }
 }
