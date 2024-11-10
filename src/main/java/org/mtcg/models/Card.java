@@ -37,4 +37,14 @@ public class Card {
     this.cardType = (name.contains("Spell")) ? CardType.SPELL : CardType.MONSTER;
     this.element = name.contains("Water") ? Element.WATER : name.contains("Fire") ? Element.FIRE : Element.NORMAL;
   }
+
+  // Constructor for DB Queries and Testing
+  public Card(UUID id, String name, float damage, CardType cardType, Element element) {
+    this.id = id;
+    this.name = name;
+    this.damage = damage;
+    this.cardType = cardType;
+    this.element = element;
+  }
+
 }
