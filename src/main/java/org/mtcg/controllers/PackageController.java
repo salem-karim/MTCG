@@ -1,7 +1,5 @@
 package org.mtcg.controllers;
 
-import java.util.UUID;
-
 import org.mtcg.db.PackageDbAccess;
 import org.mtcg.db.UserDbAccess;
 import org.mtcg.httpserver.HttpRequest;
@@ -20,15 +18,20 @@ public class PackageController extends Controller {
   private final UserDbAccess userDbAccess;
 
   public PackageController() {
+    this(new PackageDbAccess(), new UserDbAccess());
+  }
+
+  // Constructor for dependency injection
+  public PackageController(PackageDbAccess pkgDbAccess, UserDbAccess userDbAccess) {
     super();
-    this.pkgDbAccess = new PackageDbAccess();
-    this.userDbAccess = new UserDbAccess();
+    this.pkgDbAccess = pkgDbAccess;
+    this.userDbAccess = userDbAccess;
   }
 
   public HttpResponse addPackage(final HttpRequest request) {
     try {
       // Get user from token
-      User user = userDbAccess.getUserFromToken(request.getHeaders());
+      final User user = userDbAccess.getUserFromToken(request.getHeaders());
 
       // Construct the cards from the request body
       final Card[] cards = getObjectMapper().readValue(request.getBody(), Card[].class);
@@ -43,15 +46,15 @@ public class PackageController extends Controller {
         return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Bad Request\n");
       }
 
-    } catch (JsonProcessingException e) {
+    } catch (final JsonProcessingException e) {
       System.out.println(e.getMessage());
       return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Invalid request format\n");
 
-    } catch (IllegalArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       System.out.println(e.getMessage());
       return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Not 5 cards in Request Body\n");
 
-    } catch (HttpRequestException e) {
+    } catch (final HttpRequestException e) {
       System.out.println(e.getMessage());
       return new HttpResponse(HttpStatus.UNAUTHORIZED, ContentType.JSON,
           "Authorization header is missing or invalid\n");

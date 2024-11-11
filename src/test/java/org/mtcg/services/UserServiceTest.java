@@ -1,15 +1,17 @@
 package org.mtcg.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mtcg.controllers.UserController;
 import org.mtcg.httpserver.HttpRequest;
 import org.mtcg.httpserver.HttpResponse;
-import org.mtcg.utils.HttpStatus;
 import org.mtcg.utils.ContentType;
+import org.mtcg.utils.HttpStatus;
 import org.mtcg.utils.Method;
 
 public class UserServiceTest {
@@ -27,12 +29,12 @@ public class UserServiceTest {
   @Test
   void testHandlePostRequest() {
     // Arrange: Create a mock request and response
-    HttpRequest mockRequest = new HttpRequest(Method.POST, "/user", "some request body");
-    HttpResponse mockResponse = new HttpResponse(HttpStatus.CREATED, ContentType.JSON, "User created");
+    final HttpRequest mockRequest = new HttpRequest(Method.POST, "/user", "some request body");
+    final HttpResponse mockResponse = new HttpResponse(HttpStatus.CREATED, ContentType.JSON, "User created");
     when(mockUserController.addUser(mockRequest)).thenReturn(mockResponse);
 
     // Act: Call handle and get the response
-    HttpResponse response = userService.handle(mockRequest);
+    final HttpResponse response = userService.handle(mockRequest);
 
     // Assert: Verify the response with StatusCode and response body
     assertEquals(HttpStatus.CREATED.code, response.getStatusCode());
@@ -44,10 +46,10 @@ public class UserServiceTest {
   @Test
   void testHandleUnsupportedMethod() {
     // Arrange: Create a mock request with an unsupported method
-    HttpRequest mockRequest = new HttpRequest(Method.GET, "/user", null);
+    final HttpRequest mockRequest = new HttpRequest(Method.GET, "/user", null);
 
     // Act: Call handle and get the response
-    HttpResponse response = userService.handle(mockRequest);
+    final HttpResponse response = userService.handle(mockRequest);
 
     // Assert: Verify that defaultResponse is used
     assertEquals(400, response.getStatusCode());

@@ -16,12 +16,12 @@ public class UserService extends DefaultService {
     // throw new RuntimeException(e);
     // }
     // });
-    methods.put(Method.POST, userController::addUser);
+    super.methods.put(Method.POST, userController::addUser);
   }
 
   @Override
   public HttpResponse handle(final HttpRequest request) {
-    final Service service = methods.getOrDefault(request.getMethod(), this::defaultResponse);
+    final Service service = methods.getOrDefault(request.getMethod(), super::defaultResponse);
     return service.handle(request);
   }
 }

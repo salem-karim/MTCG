@@ -82,16 +82,21 @@ public class HttpRequest {
   }
 
   // Constructor for Unit tests
-  public HttpRequest(Method method, String path, String body) {
+
+  public HttpRequest(final Method method, final String path, final String body) {
+    this(method, path, body, new HashMap<>());
+  }
+
+  public HttpRequest(final Method method, final String path, final String body, final Map<String, String> headers) {
     this.method = method;
     this.path = path;
     this.body = body;
-    this.headers = new HashMap<>();
+    this.headers = headers != null ? headers : new HashMap<>();
     this.pathSegments = new ArrayList<>();
 
     // Split path into segments
-    String[] pathParts = path.split("/");
-    for (String part : pathParts) {
+    final String[] pathParts = path.split("/");
+    for (final String part : pathParts) {
       if (!part.isEmpty()) {
         this.pathSegments.add(part);
       }
