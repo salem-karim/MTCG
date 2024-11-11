@@ -10,6 +10,7 @@ public class PackageDbAccess {
   private static final Logger logger = Logger.getLogger(PackageDbAccess.class.getName());
 
   public boolean addPackage(final Package pkg) {
+    // TODO: Split into different Methods
     logger.info("Attempting to add a new package");
     Connection connection = null;
 

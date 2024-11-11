@@ -45,13 +45,18 @@ CREATE TABLE stack_cards (
 CREATE TABLE packages (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id uuid REFERENCES users (id) ON DELETE CASCADE,
-    is_bought boolean DEFAULT false NOT NULL
+    transaction_id uuid UNIQUE REFERENCES transactions (id) DEFAULT null
 );
-
 CREATE TABLE package_cards (
     package_id uuid NOT NULL REFERENCES packages (id) ON DELETE CASCADE,
     card_id uuid NOT NULL REFERENCES cards (id) ON DELETE CASCADE,
     PRIMARY KEY (package_id, card_id)
+);
+CREATE TABLE transactions (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id uuid NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    package_id uuid UNIQUE NOT NULL REFERENCES packages (id) ON DELETE SET NULL,
+    purchase_date timestamp DEFAULT current_timestamp NOT NULL
 );
 -- Create Decks Table (to define the user's active deck)
 CREATE TABLE decks (

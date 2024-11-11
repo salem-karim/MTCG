@@ -52,6 +52,7 @@ public class PackageControllerTest {
   void testAddPackage() {
     Package pkg = new Package(createCards(), userId);
     when(pkgDbAccess.addPackage(pkg)).thenReturn(true);
+    // TODO: change this so you test the Controller Repsonses instead of the "DB"
     boolean added = pkgDbAccess.addPackage(pkg);
     assertTrue(added);
     verify(pkgDbAccess, times(1)).addPackage(pkg);
