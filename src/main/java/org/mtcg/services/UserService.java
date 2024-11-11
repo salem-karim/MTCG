@@ -20,7 +20,7 @@ public class UserService extends DefaultService {
   }
 
   @Override
-  public HttpResponse handle(HttpRequest request) {
+  public HttpResponse handle(final HttpRequest request) {
     final Service service = methods.getOrDefault(request.getMethod(), this::defaultResponse);
     return service.handle(request);
   }

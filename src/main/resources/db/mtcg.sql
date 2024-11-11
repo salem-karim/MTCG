@@ -33,7 +33,8 @@ CREATE TABLE cards (
 -- Create Stacks Table (to hold all cards of a user)
 CREATE TABLE stacks (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id uuid UNIQUE NOT NULL REFERENCES users (id) ON DELETE CASCADE
+    user_id uuid UNIQUE NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    is_in_deck boolean DEFAULT false NOT NULL
 );
 CREATE TABLE stack_cards (
     stack_id uuid NOT NULL REFERENCES stacks (id) ON DELETE CASCADE,
@@ -43,8 +44,10 @@ CREATE TABLE stack_cards (
 -- Create Packages Table (to define card packages)
 CREATE TABLE packages (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id uuid REFERENCES users (id) ON DELETE CASCADE
+    user_id uuid REFERENCES users (id) ON DELETE CASCADE,
+    is_bought boolean DEFAULT false NOT NULL
 );
+
 CREATE TABLE package_cards (
     package_id uuid NOT NULL REFERENCES packages (id) ON DELETE CASCADE,
     card_id uuid NOT NULL REFERENCES cards (id) ON DELETE CASCADE,

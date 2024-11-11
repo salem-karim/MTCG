@@ -1,15 +1,10 @@
 package org.mtcg.db;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
-import java.util.UUID;
 import java.util.logging.Logger;
 
 import org.mtcg.models.Package;
-import org.mtcg.utils.exceptions.HttpRequestException;
 
 public class PackageDbAccess {
   private static final Logger logger = Logger.getLogger(PackageDbAccess.class.getName());
@@ -86,30 +81,4 @@ public class PackageDbAccess {
     }
   }
 
-  public UUID getUserId(final Map<String, String> headers) throws HttpRequestException {
-    // get token from the header labeled with "Authorization"
-    final String authorization = headers.get("Authorization");
-    if (authorization != null && authorization.startsWith("Bearer ")) {
-      final String token = authorization.substring(7);
-      try (Connection connection = DbConnection.getConnection()) {
-        // Then get its userId using the token
-        final String sql = "SELECT id FROM users where token = ?";
-        final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        preparedStatement.setString(1, token);
-
-        try (ResultSet resultSet = preparedStatement.executeQuery()) {
-          if (resultSet.next()) {
-            final UUID userId = (UUID) resultSet.getObject("id");
-            logger.info("UserId retrieved successfully!");
-            return userId;
-          }
-        }
-      } catch (final SQLException e) {
-        logger.warning("User of token not found");
-      }
-    } else {
-      throw new HttpRequestException("No Authorization given");
-    }
-    return null;
-  }
 }

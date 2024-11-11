@@ -12,7 +12,7 @@ public abstract class DefaultService implements Service {
   protected final HashMap<Method, Service> methods = new HashMap<>();
 
   // Default Response for unhandled Requests
-  protected HttpResponse defaultResponse(HttpRequest request) {
+  protected HttpResponse defaultResponse(final HttpRequest request) {
     return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Bad Request");
   }
 }
