@@ -10,14 +10,12 @@ public class TransactionDbAccess {
 
   public boolean buyPackage(UUID id) {
     // TODO:
-    // Select Random Package from DB
+    // Select Random Package from DB which has no FK for transactions table
     // Create a Stack Object with id = UUID.randomUUID()
     // userId and Cards in an ArrayList
     // Insert into Stack table the stack ID and its userId
     // make Batch for inserting StackID and cardIds in stack_cards
     // Set package is bought to true OR
-    // make a transactions table where are transactions are saved
-    // then compare if a foreign key is Null or not for purchases
 
     logger.info("Attempting to buy a package");
     Connection connection = null;
