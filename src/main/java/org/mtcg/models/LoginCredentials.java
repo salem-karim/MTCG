@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class LoginCredentials {
   @JsonProperty("Username")
-  private String username;
+  private String username = "";
   @JsonProperty("Password")
-  private String password;
+  private String password = "";
 }

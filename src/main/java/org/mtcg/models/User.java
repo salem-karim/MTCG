@@ -17,12 +17,12 @@ public class User {
   @JsonProperty("Id")
   private UUID id;
   @JsonProperty("Username")
-  private String username;
+  private String username = "";
 
   @JsonIgnore
-  private String password;
+  private String password = "";
   private int coins = 20;
-  private String token;
+  private String token = "";
 
   // Constructor for ObjectMapper
   @JsonCreator

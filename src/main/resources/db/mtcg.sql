@@ -24,7 +24,7 @@ CREATE TABLE users (
 CREATE TABLE cards (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     name varchar(50) NOT NULL,
-    damage float CHECK (damage >= 0) NOT NULL,
+    damage double CHECK (damage >= 0) NOT NULL,
     element_type varchar(20) CHECK (
         element_type IN ('fire', 'water', 'normal')
     ) NOT NULL,

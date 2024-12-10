@@ -27,7 +27,6 @@ import org.mtcg.utils.HttpStatus;
 import org.mtcg.utils.Method;
 import org.mtcg.utils.exceptions.HttpRequestException;
 
-//TODO: Fix Object Mapper Issue with mocking
 @ExtendWith(MockitoExtension.class)
 public class PackageControllerTest {
 
@@ -62,11 +61,11 @@ public class PackageControllerTest {
     // Arrange
     String requestBody = """
         [
-            {"id": "%s", "name": "Ork", "damage": 50.0},
-            {"id": "%s", "name": "Water Spell", "damage": 30.5},
-            {"id": "%s", "name": "Knight", "damage": 40.0},
-            {"id": "%s", "name": "Fire Dragon", "damage": 45.0},
-            {"id": "%s", "name": "KnifeSpell", "damage": 35.0}
+            {"Id": "%s", "Name": "Ork", "Damage": 50.0},
+            {"Id": "%s", "Name": "Water Spell", "Damage": 30.5},
+            {"Id": "%s", "Name": "Knight", "Damage": 40.0},
+            {"Id": "%s", "Name": "Fire Dragon", "Damage": 45.0},
+            {"Id": "%s", "Name": "KnifeSpell", "Damage": 35.0}
         ]
         """.formatted(
         UUID.randomUUID(), UUID.randomUUID(),
@@ -141,7 +140,7 @@ public class PackageControllerTest {
 
     // Act
     HttpResponse response = packageController.addPackage(request);
-
+    // TODO: find out why response is invalid request from
     // Assert
     assertEquals(HttpStatus.BAD_REQUEST.code, response.getStatusCode());
     assertEquals(ContentType.JSON.toString(), response.getContentType().toString());

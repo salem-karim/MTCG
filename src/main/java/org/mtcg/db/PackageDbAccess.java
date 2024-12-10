@@ -36,7 +36,7 @@ public class PackageDbAccess {
         for (final var card : pkg.getCards()) {
           cardStmt.setObject(1, card.getId());
           cardStmt.setString(2, card.getName());
-          cardStmt.setFloat(3, card.getDamage());
+          cardStmt.setDouble(3, card.getDamage());
           cardStmt.setString(4, card.getElement().name().toLowerCase());
           cardStmt.setString(5, card.getCardType().name().toLowerCase());
           cardStmt.addBatch(); // Add to batch

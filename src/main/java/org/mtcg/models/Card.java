@@ -20,8 +20,8 @@ public class Card {
   }
 
   private UUID id;
-  private String name;
-  private float damage;
+  private String name = "";
+  private double damage = 0.0;
   private CardType cardType;
   private Element element;
 
@@ -29,7 +29,7 @@ public class Card {
   public Card(
       @JsonProperty("Id") UUID id,
       @JsonProperty("Name") String name,
-      @JsonProperty("Damage") float damage) {
+      @JsonProperty("Damage") double damage) {
     this.id = id;
     this.name = name;
     this.damage = damage;
@@ -39,7 +39,7 @@ public class Card {
   }
 
   // Constructor for DB Queries and Testing
-  public Card(UUID id, String name, float damage, CardType cardType, Element element) {
+  public Card(UUID id, String name, double damage, CardType cardType, Element element) {
     this.id = id;
     this.name = name;
     this.damage = damage;
