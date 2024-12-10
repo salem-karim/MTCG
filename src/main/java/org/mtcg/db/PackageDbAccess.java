@@ -20,7 +20,7 @@ public class PackageDbAccess {
 
       // Insert the package into the package table
       final String insertPackageSQL = "INSERT INTO packages (id, user_id) VALUES (?, ?)";
-      try (var packageStmt = connection.prepareStatement(insertPackageSQL)) {
+      try (final var packageStmt = connection.prepareStatement(insertPackageSQL)) {
         packageStmt.setObject(1, pkg.getId());
         packageStmt.setObject(2, pkg.getUserId());
         final int rowsAffected = packageStmt.executeUpdate();
@@ -31,7 +31,7 @@ public class PackageDbAccess {
 
       // Insert cards into the cards table using Batches
       final String insertCardSQL = "INSERT INTO cards (id, name, damage, element_type, card_type) VALUES (?, ?, ?, ?, ?)";
-      try (var cardStmt = connection.prepareStatement(insertCardSQL)) {
+      try (final var cardStmt = connection.prepareStatement(insertCardSQL)) {
         // Set Values of stamement in a loop
         for (final var card : pkg.getCards()) {
           cardStmt.setObject(1, card.getId());
@@ -46,7 +46,7 @@ public class PackageDbAccess {
 
       // Insert foreign keys into package_cards table
       final String insertPackageCardsSQL = "INSERT INTO package_cards (package_id, card_id) VALUES (?, ?)";
-      try (var packageCardStmt = connection.prepareStatement(insertPackageCardsSQL)) {
+      try (final var packageCardStmt = connection.prepareStatement(insertPackageCardsSQL)) {
         // Again for every card of the Package
         for (final var card : pkg.getCards()) {
           packageCardStmt.setObject(1, pkg.getId());

@@ -14,28 +14,49 @@ public class UserDbAccess {
   public boolean addUser(final User user) {
     // The usual get Connection make a prepareStatement execute it
     try (Connection connection = DbConnection.getConnection()) {
-      final String sql = "INSERT INTO users (id, username, password, token) VALUES (?, ?, ?, ?)";
-      final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-      // Set all the VALUES of the Statement
-      preparedStatement.setObject(1, user.getId());
-      preparedStatement.setString(2, user.getUsername());
-      preparedStatement.setString(3, user.getPassword());
-      preparedStatement.setString(4, user.getToken());
+      connection.setAutoCommit(false);
 
-      final int affectedRows = preparedStatement.executeUpdate();
-      if (affectedRows > 0) {
-        logger.info("User added successfully: " + user.getUsername());
-        return true;
-      } else {
-        logger.warning("Failed to add user: " + user.getUsername());
-        return false;
+      final String userSQL = "INSERT INTO users (id, username, password, token) VALUES (?, ?, ?, ?)";
+      try (final var preparedStatement = connection.prepareStatement(userSQL)) {
+        // Set all the VALUES of the Statement
+        preparedStatement.setObject(1, user.getId());
+        preparedStatement.setString(2, user.getUsername());
+        preparedStatement.setString(3, user.getPassword());
+        preparedStatement.setString(4, user.getToken());
+
+        final int userAffectedRows = preparedStatement.executeUpdate();
+        if (userAffectedRows == 0) {
+          throw new SQLException("Failed to insert user record into the database.");
+        }
       }
-    } catch (final SQLException e) {
-      if (e.getMessage() != null && e.getMessage().contains("duplicate key")) {
-        logger.warning("Username already exists: " + user.getUsername());
-        return false;
+
+      final String stackSQL = "INSERT INTO stacks (id, user_id) VALUES (?, ?)";
+      try (final var stackStmt = connection.prepareStatement(stackSQL)) {
+        // "initialize" the User stack for future queries
+        UUID stackId = UUID.randomUUID();
+        stackStmt.setObject(1, stackId);
+        stackStmt.setObject(2, user.getId());
+        int stackAffectedRows = stackStmt.executeUpdate();
+
+        if (stackAffectedRows == 0) {
+          throw new SQLException("Failed to initialize user stack in the database.");
+        }
       }
-      logger.log(Level.SEVERE, "SQL error while adding user: " + user.getUsername(), e);
+
+      connection.commit(); // Commit transaction if both inserts succeed
+      logger.info("User and their stack added successfully: " + user.getUsername());
+      return true;
+
+    } catch (SQLException e) {
+      logger.severe("Failed to add user or initialize stack: " + e.getMessage());
+      try {
+        if (!DbConnection.getConnection().getAutoCommit()) {
+          DbConnection.getConnection().rollback(); // Rollback transaction on failure
+          logger.info("Transaction rolled back due to failure.");
+        }
+      } catch (SQLException rollbackEx) {
+        logger.severe("Rollback failed: " + rollbackEx.getMessage());
+      }
       return false;
     }
   }
@@ -43,7 +64,7 @@ public class UserDbAccess {
   public User getUserByUsername(final String username) {
     try (Connection connection = DbConnection.getConnection()) {
       final String sql = "SELECT id, username, password, token FROM users WHERE username = ?";
-      final PreparedStatement preparedStatement = connection.prepareStatement(sql);
+      final var preparedStatement = connection.prepareStatement(sql);
       preparedStatement.setString(1, username);
 
       try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -71,7 +92,7 @@ public class UserDbAccess {
       try (Connection connection = DbConnection.getConnection()) {
         // Prepare SQL to retrieve the user by token
         final String sql = "SELECT * FROM users WHERE token = ?";
-        final PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        final var preparedStatement = connection.prepareStatement(sql);
         preparedStatement.setString(1, token);
 
         try (ResultSet resultSet = preparedStatement.executeQuery()) {
