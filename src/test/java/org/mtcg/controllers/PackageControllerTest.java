@@ -124,10 +124,13 @@ public class PackageControllerTest {
     // Arrange: Body with less than 5 cards
     String requestBody = """
         [
-            {"id": "%s", "name": "Ork", "damage": 50.0},
-            {"id": "%s", "name": "Water Spell", "damage": 30.5}
+            {"Id": "%s", "Name": "Ork", "Damage": 50.0},
+            {"Id": "%s", "Name": "Water Spell", "Damage": 30.5},
+            {"Id": "%s", "Name": "Knight", "Damage": 40.0}
         ]
-        """.formatted(UUID.randomUUID(), UUID.randomUUID());
+        """.formatted(
+        UUID.randomUUID(), UUID.randomUUID(),
+        UUID.randomUUID());
 
     HttpRequest request = new HttpRequest(
         Method.POST,
@@ -140,7 +143,7 @@ public class PackageControllerTest {
 
     // Act
     HttpResponse response = packageController.addPackage(request);
-    // TODO: find out why response is invalid request from
+
     // Assert
     assertEquals(HttpStatus.BAD_REQUEST.code, response.getStatusCode());
     assertEquals(ContentType.JSON.toString(), response.getContentType().toString());
