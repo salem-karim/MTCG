@@ -20,7 +20,7 @@ public class HttpRequest {
     if (this.pathSegments == null || this.pathSegments.isEmpty()) {
       return null;
     } else {
-      return '/' + this.pathSegments.getFirst();
+      return "/" + String.join("/", this.pathSegments);
     }
   }
 

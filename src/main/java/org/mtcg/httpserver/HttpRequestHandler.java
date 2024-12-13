@@ -62,6 +62,7 @@ public class HttpRequestHandler implements Runnable {
           "<html><body>Welcome to the homepage!</body></html>");
     } else {
       // Otherwise use the router to get right Service and resolve it
+      // TODO: fix bug so it accepts routes with multiple slashes
       final var service = this.router.resolve(request.getServiceRoute());
       if (service != null) {
         response = service.handle(request);

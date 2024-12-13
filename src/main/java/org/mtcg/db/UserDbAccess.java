@@ -120,4 +120,20 @@ public class UserDbAccess {
     return null;
   }
 
+  public void updateUserCoins(User user) throws SQLException {
+    try (var connection = DbConnection.getConnection()) {
+      final String updateUserCoinsSQL = "UPDATE users SET coins = ? WHERE id = ?";
+      try (final var updateCoinsStmt = connection.prepareStatement(updateUserCoinsSQL)) {
+        updateCoinsStmt.setInt(1, user.getCoins());
+        updateCoinsStmt.setObject(2, user.getId());
+
+        int affectedRows = updateCoinsStmt.executeUpdate();
+        if (affectedRows == 0) {
+          throw new SQLException("Failed to update user coins. No user found with the given ID.");
+        }
+      }
+    }
+
+  }
+
 }

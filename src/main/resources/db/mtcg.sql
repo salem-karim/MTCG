@@ -24,12 +24,13 @@ CREATE TABLE users (
 CREATE TABLE cards (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     name varchar(50) NOT NULL,
-    damage double CHECK (damage >= 0) NOT NULL,
+    damage double precision CHECK (damage >= 0) NOT NULL,
     element_type varchar(20) CHECK (
         element_type IN ('fire', 'water', 'normal')
     ) NOT NULL,
     card_type varchar(20) CHECK (card_type IN ('monster', 'spell')) NOT NULL
 );
+
 -- Create Stacks Table (to hold all cards of a user)
 CREATE TABLE stacks (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -41,23 +42,39 @@ CREATE TABLE stack_cards (
     card_id uuid NOT NULL REFERENCES cards (id) ON DELETE CASCADE,
     PRIMARY KEY (stack_id, card_id)
 );
--- Create Packages Table (to define card packages)
+
+
+-- Create Transactions Table without foreign key to packages
+CREATE TABLE transactions (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id uuid NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    package_id uuid UNIQUE, -- Placeholder for foreign key
+    purchase_date timestamp DEFAULT current_timestamp NOT NULL
+);
+
+-- Create Packages Table without foreign key to transactions
 CREATE TABLE packages (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id uuid REFERENCES users (id) ON DELETE CASCADE,
-    transaction_id uuid UNIQUE REFERENCES transactions (id) DEFAULT null
+    transaction_id uuid UNIQUE -- Placeholder for foreign key
 );
+
+-- Add the foreign key constraints to resolve circular dependency
+ALTER TABLE transactions
+ADD CONSTRAINT fk_transactions_package_id
+FOREIGN KEY (package_id) REFERENCES packages (id);
+
+ALTER TABLE packages
+ADD CONSTRAINT fk_packages_transaction_id
+FOREIGN KEY (transaction_id) REFERENCES transactions (id);
+
+
 CREATE TABLE package_cards (
     package_id uuid NOT NULL REFERENCES packages (id) ON DELETE CASCADE,
     card_id uuid NOT NULL REFERENCES cards (id) ON DELETE CASCADE,
     PRIMARY KEY (package_id, card_id)
 );
-CREATE TABLE transactions (
-    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id uuid NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    package_id uuid UNIQUE NOT NULL REFERENCES packages (id) ON DELETE SET NULL,
-    purchase_date timestamp DEFAULT current_timestamp NOT NULL
-);
+
 -- Create Decks Table (to define the user's active deck)
 CREATE TABLE decks (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),

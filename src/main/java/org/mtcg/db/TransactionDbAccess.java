@@ -5,12 +5,12 @@ import java.sql.SQLException;
 import java.util.UUID;
 import java.util.logging.Logger;
 
+import org.mtcg.models.Transaction;
+
 public class TransactionDbAccess {
   private static Logger logger = Logger.getLogger(TransactionDbAccess.class.getName());
 
   public boolean buyPackage(UUID id) {
-    // TODO:
-    // add a Transaction Object into the table and insert its id into packages table
 
     logger.info("Attempting to buy a package");
     Connection connection = null;
@@ -56,10 +56,11 @@ public class TransactionDbAccess {
         }
       }
 
-      final String stackSQL = "SELECT id FROM stack WHERE user_id = ?";
+      final String stackSQL = "SELECT id FROM stacks WHERE user_id = ?";
       UUID stackId = null;
 
-      try (var stackStmt = connection.prepareStatement(randomPkgSQL)) {
+      try (final var stackStmt = connection.prepareStatement(stackSQL)) {
+        stackStmt.setObject(1, id);
         var result = stackStmt.executeQuery();
         if (result.next()) {
           stackId = (UUID) result.getObject("id");
@@ -72,15 +73,62 @@ public class TransactionDbAccess {
       final String stackCardsSQL = "INSERT INTO stack_cards (stack_id, card_id) VALUES (?, ?)";
       try (final var stackCardsStmt = connection.prepareStatement(stackCardsSQL)) {
         for (UUID uuid : cardIds) {
-          stackCardsStmt.setObject(1, uuid);
-          stackCardsStmt.setObject(2, stackId);
+          stackCardsStmt.setObject(1, stackId);
+          stackCardsStmt.setObject(2, uuid);
           stackCardsStmt.addBatch();
         }
         stackCardsStmt.executeBatch();
       }
 
+      final var transaction = new Transaction(UUID.randomUUID(), id, pkgId);
+
+      final String transactionSQL = "INSERT INTO transactions (id, user_id, package_id) VALUES (?, ?, ?)";
+      try (final var transactionStmt = connection.prepareStatement(transactionSQL)) {
+        transactionStmt.setObject(1, transaction.getId());
+        transactionStmt.setObject(2, transaction.getUser_Id());
+        transactionStmt.setObject(3, transaction.getPackage_Id());
+
+        final int AffectedRows = transactionStmt.executeUpdate();
+        if (AffectedRows == 0) {
+          throw new SQLException("Failed to insert transaction record into database");
+        }
+      }
+
+      final String pkgUpdateSQL = "UPDATE packages SET transaction_id = ? WHERE id = ?";
+      try (final var pkgUpdateStmt = connection.prepareStatement(pkgUpdateSQL)) {
+        pkgUpdateStmt.setObject(1, transaction.getId());
+        pkgUpdateStmt.setObject(2, pkgId);
+
+        final int affectedRows = pkgUpdateStmt.executeUpdate();
+        if (affectedRows == 0) {
+          throw new SQLException("Failed to update the package with the transaction record");
+        }
+      }
+
+      connection.commit();
+      logger.info("Transaction executed successfully");
+      return true;
+
     } catch (SQLException e) {
       logger.severe("Failed to buy Package: " + e.getMessage());
+      try {
+        if (connection != null) {
+          connection.rollback(); // Rollback transaction in case of error
+        }
+      } catch (final SQLException rollbackEx) {
+        logger.severe("Failed to rollback transaction: " + rollbackEx.getMessage());
+      }
+      return false;
+    } finally {
+      try {
+        if (connection != null && !connection.isClosed()) {
+          connection.setAutoCommit(true); // Restore auto-commit mode
+          connection.close(); // Close the connection
+        }
+      } catch (final SQLException ex) {
+        logger.warning("Failed to reset auto-commit or close connection: " + ex.getMessage());
+      }
+
     }
   }
 

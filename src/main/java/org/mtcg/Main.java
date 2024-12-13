@@ -3,7 +3,7 @@ package org.mtcg;
 import org.mtcg.httpserver.HttpServer;
 import org.mtcg.services.PackageService;
 import org.mtcg.services.SessionService;
-//import org.mtcg.services.TransactionService;
+import org.mtcg.services.TransactionService;
 import org.mtcg.services.UserService;
 import org.mtcg.utils.Router;
 
@@ -20,9 +20,7 @@ public class Main {
     // router.addService("/users/{username}", new UserService());
     router.addService("/sessions", new SessionService());
     router.addService("/packages", new PackageService());
-    // TODO: Complex select random package transfer
-    // into users stack remove package from package table
-    // router.addService("/transactions/packages", new TransactionService());
+    router.addService("/transactions/packages", new TransactionService());
     //
     // router.addService("/cards", new CardService());
     // Also has routers like /deck?format=plain

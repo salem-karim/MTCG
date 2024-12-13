@@ -1,5 +1,7 @@
 package org.mtcg.controllers;
 
+import java.sql.SQLException;
+
 import org.mtcg.db.TransactionDbAccess;
 import org.mtcg.db.UserDbAccess;
 import org.mtcg.httpserver.HttpRequest;
@@ -33,6 +35,8 @@ public class TransactionController extends Controller {
       // Step 3: Attempt to buy package
       boolean success = transactionDbAccess.buyPackage(user.getId());
       if (success) {
+        user.setCoins(user.getCoins() - 5);
+        userDbAccess.updateUserCoins(user);
         return new HttpResponse(HttpStatus.CREATED, ContentType.JSON, "Package purchased successfully");
       } else {
         return new HttpResponse(HttpStatus.NOT_FOUND, ContentType.JSON, "No packages available");
@@ -43,6 +47,9 @@ public class TransactionController extends Controller {
       System.out.println(e.getMessage());
       return new HttpResponse(HttpStatus.UNAUTHORIZED, ContentType.JSON,
           "Unauthorized");
+    } catch (SQLException e) {
+      System.out.println(e.getMessage());
+      return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "Internal Server Error");
     }
   }
 }
