@@ -24,8 +24,11 @@ public class Main {
     router.addService("/transactions/packages", new TransactionService());
     //
     router.addService("/cards", new CardService());
+    // TODO: next is deck and maybe user/username
+    //
     // Also has routers like /deck?format=plain
     // router.addService("/deck", new DeckService());
+    //
     // router.addService("/stats", new StatService);
     // router.addService("/scoreboard", new ScoreBoardService());
     // router.addService("/battles", new BattleService());
