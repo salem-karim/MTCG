@@ -24,22 +24,26 @@ public class TransactionController extends Controller {
   public HttpResponse buyPackage(final HttpRequest request) {
     try {
       // Step 1: Get user from token
-      User user = userDbAccess.getUserFromToken(request.getHeaders());
+      User user = request.getUser();
+      if (request.getUser() == null) {
+        throw new HttpRequestException("User not Authorized");
+      }
 
       // Step 2: Check user's coin balance
       if (user.getCoins() < 5) {
         return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
-            "Insufficient funds");
+            "Insufficient funds\n");
       }
 
       // Step 3: Attempt to buy package
       boolean success = transactionDbAccess.buyPackage(user.getId());
+      // boolean success = transactionDbAccess.buyPackage(user.getId());
       if (success) {
         user.setCoins(user.getCoins() - 5);
         userDbAccess.updateUserCoins(user);
-        return new HttpResponse(HttpStatus.CREATED, ContentType.JSON, "Package purchased successfully");
+        return new HttpResponse(HttpStatus.CREATED, ContentType.JSON, "Package purchased successfully\n");
       } else {
-        return new HttpResponse(HttpStatus.NOT_FOUND, ContentType.JSON, "No packages available");
+        return new HttpResponse(HttpStatus.NOT_FOUND, ContentType.JSON, "No packages available\n");
       }
 
     } catch (HttpRequestException e) {
@@ -49,7 +53,7 @@ public class TransactionController extends Controller {
           "Unauthorized");
     } catch (SQLException e) {
       System.out.println(e.getMessage());
-      return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "Internal Server Error");
+      return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "Internal Server Error\n");
     }
   }
 }

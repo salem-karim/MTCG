@@ -1,65 +1,55 @@
 package org.mtcg.controllers;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.mtcg.db.PackageDbAccess;
-import org.mtcg.db.UserDbAccess;
 import org.mtcg.httpserver.HttpRequest;
 import org.mtcg.httpserver.HttpResponse;
-import org.mtcg.models.Package;
+import org.mtcg.models.Card;
 import org.mtcg.models.User;
 import org.mtcg.utils.ContentType;
 import org.mtcg.utils.HttpStatus;
-import org.mtcg.utils.Method;
-import org.mtcg.utils.exceptions.HttpRequestException;
 
-@ExtendWith(MockitoExtension.class)
-public class PackageControllerTest {
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-  @Mock
-  private PackageDbAccess pkgDbAccess;
+import java.util.UUID;
 
-  @Mock
-  private UserDbAccess userDbAccess;
-
+class PackageControllerTest {
   private PackageController packageController;
 
-  private UUID userId;
-  private Map<String, String> headers;
-  private User user;
+  @Mock
+  private PackageDbAccess mockPackageDbAccess;
+
+  @Mock
+  private HttpRequest mockRequest;
+
+  @Mock
+  private User mockUser;
+
+  private ObjectMapper objectMapper;
 
   @BeforeEach
-  public void setUp() {
-    userId = UUID.randomUUID();
-    headers = new HashMap<>();
-    headers.put("Authorization", "Bearer testUser-mtcgToken");
+  void setUp() {
+    MockitoAnnotations.openMocks(this);
 
-    // Initialize a User with all required parameters
-    user = new User("testUser", "testUser-mtcgToken", "securePassword", userId);
-    user.setId(userId);
-
-    // Explicitly create the controller with mocks
-    packageController = new PackageController(pkgDbAccess, userDbAccess);
+    // Create the PackageController with a mock PackageDbAccess
+    packageController = new PackageController(mockPackageDbAccess);
+    objectMapper = new ObjectMapper();
   }
 
   @Test
-  void testAddPackage_SuccessfulResponse() throws Exception {
-    // Arrange
-    String requestBody = """
+  void testAddPackage_Successful() throws Exception {
+    // Prepare test data
+    UUID userId = UUID.randomUUID();
+    when(mockUser.getId()).thenReturn(userId);
+
+    // Prepare JSON representation of cards
+    String cardsJson = """
         [
             {"Id": "%s", "Name": "Ork", "Damage": 50.0},
             {"Id": "%s", "Name": "Water Spell", "Damage": 30.5},
@@ -72,57 +62,37 @@ public class PackageControllerTest {
         UUID.randomUUID(), UUID.randomUUID(),
         UUID.randomUUID());
 
-    HttpRequest request = new HttpRequest(
-        Method.POST,
-        "/packages",
-        requestBody,
-        headers);
+    // Setup mocks
+    when(mockRequest.getUser()).thenReturn(mockUser);
+    when(mockRequest.getBody()).thenReturn(cardsJson);
 
-    // Mock behavior with eq() for matching the headers
-    when(userDbAccess.getUserFromToken(eq(headers)))
-        .thenReturn(user);
-    when(pkgDbAccess.addPackage(any(Package.class))).thenReturn(true);
+    // Mock successful package addition
+    when(mockPackageDbAccess.addPackage(any())).thenReturn(true);
 
-    // Act
-    HttpResponse response = packageController.addPackage(request);
+    // Verify card parsing
+    Card[] parsedCards = objectMapper.readValue(cardsJson, Card[].class);
+    assertEquals(5, parsedCards.length, "Should parse 5 cards correctly");
 
-    // Assert
-    assertEquals(HttpStatus.CREATED.code, response.getStatusCode());
-    assertEquals(ContentType.JSON.toString(), response.getContentType().toString());
+    // Call method under test
+    HttpResponse response = packageController.addPackage(mockRequest);
+
+    // Assertions
+    assertEquals(HttpStatus.CREATED.code, response.getStatusCode(), "Status should be CREATED");
+    assertEquals(ContentType.JSON.toString(), response.getContentType());
     assertEquals("Package created successfully\n", response.getBody());
 
-    verify(userDbAccess).getUserFromToken(eq(headers)); // Use eq() matcher for headers
-    verify(pkgDbAccess).addPackage(any(Package.class));
+    // Verify that addPackage was called
+    verify(mockPackageDbAccess).addPackage(any());
   }
 
   @Test
-  void testAddPackage_UnauthorizedResponse() throws Exception {
-    // Arrange
-    HttpRequest request = new HttpRequest(
-        Method.POST,
-        "/packages",
-        "[{\"id\": \"" + UUID.randomUUID() + "\", \"name\":\"Ork\",\"damage\":50.0}]",
-        headers);
+  void testAddPackage_InsufficientCards() throws Exception {
+    // Prepare test data with fewer than 5 cards
+    UUID userId = UUID.randomUUID();
+    when(mockUser.getId()).thenReturn(userId);
 
-    when(userDbAccess.getUserFromToken(eq(headers))) // Use eq() matcher for headers
-        .thenThrow(new HttpRequestException("Authorization header is missing or invalid"));
-
-    // Act
-    HttpResponse response = packageController.addPackage(request);
-
-    // Assert
-    assertEquals(HttpStatus.UNAUTHORIZED.code, response.getStatusCode());
-    assertEquals(ContentType.JSON.toString(), response.getContentType().toString());
-    assertEquals("Authorization header is missing or invalid\n", response.getBody());
-
-    verify(userDbAccess).getUserFromToken(eq(headers)); // Use eq() matcher for headers
-    verify(pkgDbAccess, never()).addPackage(any(Package.class));
-  }
-
-  @Test
-  void testAddPackage_BadRequestResponse() throws Exception {
-    // Arrange: Body with less than 5 cards
-    String requestBody = """
+    // Prepare JSON representation of cards
+    String cardsJson = """
         [
             {"Id": "%s", "Name": "Ork", "Damage": 50.0},
             {"Id": "%s", "Name": "Water Spell", "Damage": 30.5},
@@ -132,24 +102,66 @@ public class PackageControllerTest {
         UUID.randomUUID(), UUID.randomUUID(),
         UUID.randomUUID());
 
-    HttpRequest request = new HttpRequest(
-        Method.POST,
-        "/packages",
-        requestBody,
-        headers);
+    // Setup mocks
+    when(mockRequest.getUser()).thenReturn(mockUser);
+    when(mockRequest.getBody()).thenReturn(cardsJson);
 
-    when(userDbAccess.getUserFromToken(eq(headers))) // Use eq() matcher for headers
-        .thenReturn(user);
+    // Call method under test and expect an exception
+    HttpResponse response = packageController.addPackage(mockRequest);
 
-    // Act
-    HttpResponse response = packageController.addPackage(request);
-
-    // Assert
+    // Assertions
     assertEquals(HttpStatus.BAD_REQUEST.code, response.getStatusCode());
-    assertEquals(ContentType.JSON.toString(), response.getContentType().toString());
-    assertEquals("Not 5 cards in Request Body\n", response.getBody()); // Update to match the controller's message
+    assertEquals(ContentType.JSON.toString(), response.getContentType());
+    assertEquals("Not 5 cards in Request Body\n", response.getBody());
+  }
 
-    verify(userDbAccess).getUserFromToken(eq(headers)); // Use eq() matcher for headers
-    verify(pkgDbAccess, never()).addPackage(any(Package.class));
+  @Test
+  void testAddPackage_Unauthorized() throws Exception {
+    // Simulate no user (unauthorized request)
+    when(mockRequest.getUser()).thenReturn(null);
+
+    // Call method under test
+    HttpResponse response = packageController.addPackage(mockRequest);
+
+    // Assertions
+    assertEquals(HttpStatus.UNAUTHORIZED.code, response.getStatusCode());
+    assertEquals(ContentType.JSON.toString(), response.getContentType());
+    assertEquals("Authorization header is missing or invalid\n", response.getBody());
+  }
+
+  @Test
+  void testAddPackage_DatabaseFailure() throws Exception {
+    // Prepare test data
+    UUID userId = UUID.randomUUID();
+    when(mockUser.getId()).thenReturn(userId);
+
+    // Prepare JSON representation of cards
+    String cardsJson = """
+        [
+            {"Id": "%s", "Name": "Ork", "Damage": 50.0},
+            {"Id": "%s", "Name": "Water Spell", "Damage": 30.5},
+            {"Id": "%s", "Name": "Knight", "Damage": 40.0},
+            {"Id": "%s", "Name": "Fire Dragon", "Damage": 45.0},
+            {"Id": "%s", "Name": "KnifeSpell", "Damage": 35.0}
+        ]
+        """.formatted(
+        UUID.randomUUID(), UUID.randomUUID(),
+        UUID.randomUUID(), UUID.randomUUID(),
+        UUID.randomUUID());
+
+    // Setup mocks
+    when(mockRequest.getUser()).thenReturn(mockUser);
+    when(mockRequest.getBody()).thenReturn(cardsJson);
+
+    // Mock database failure
+    when(mockPackageDbAccess.addPackage(any())).thenReturn(false);
+
+    // Call method under test
+    HttpResponse response = packageController.addPackage(mockRequest);
+
+    // Assertions
+    assertEquals(HttpStatus.BAD_REQUEST.code, response.getStatusCode());
+    assertEquals(ContentType.JSON.toString(), response.getContentType());
+    assertEquals("Bad Request\n", response.getBody());
   }
 }

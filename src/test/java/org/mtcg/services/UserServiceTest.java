@@ -29,7 +29,7 @@ public class UserServiceTest {
   @Test
   void testHandlePostRequest() {
     // Arrange: Create a mock request and response
-    final HttpRequest mockRequest = new HttpRequest(Method.POST, "/user", "some request body");
+    final HttpRequest mockRequest = new HttpRequest(Method.POST, "/user", "some request body", "");
     final HttpResponse mockResponse = new HttpResponse(HttpStatus.CREATED, ContentType.JSON, "User created");
     when(mockUserController.addUser(mockRequest)).thenReturn(mockResponse);
 
@@ -46,7 +46,7 @@ public class UserServiceTest {
   @Test
   void testHandleUnsupportedMethod() {
     // Arrange: Create a mock request with an unsupported method
-    final HttpRequest mockRequest = new HttpRequest(Method.GET, "/user", null);
+    final HttpRequest mockRequest = new HttpRequest(Method.GET, "/user", null, "");
 
     // Act: Call handle and get the response
     final HttpResponse response = userService.handle(mockRequest);

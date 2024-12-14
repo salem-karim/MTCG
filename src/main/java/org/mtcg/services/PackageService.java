@@ -1,6 +1,7 @@
 package org.mtcg.services;
 
 import org.mtcg.controllers.PackageController;
+import org.mtcg.db.PackageDbAccess;
 import org.mtcg.httpserver.HttpRequest;
 import org.mtcg.httpserver.HttpResponse;
 import org.mtcg.utils.Method;
@@ -8,7 +9,7 @@ import org.mtcg.utils.Method;
 public class PackageService extends DefaultService {
 
   public PackageService() {
-    final var packageController = new PackageController();
+    final var packageController = new PackageController(new PackageDbAccess());
     methods.put(Method.POST, packageController::addPackage);
   }
 

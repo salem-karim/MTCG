@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.mtcg.db.UserDbAccess;
 import org.mtcg.utils.ContentType;
 import org.mtcg.utils.HttpStatus;
 import org.mtcg.utils.Router;
@@ -43,7 +44,7 @@ public class HttpRequestHandler implements Runnable {
   }
 
   private HttpRequest parseRequest(final BufferedReader reader) throws HttpRequestException {
-    return new HttpRequest(reader);
+    return new HttpRequest(reader, new UserDbAccess());
   }
 
   public void handleRequest(final PrintWriter writer, final HttpRequest request) throws IOException {

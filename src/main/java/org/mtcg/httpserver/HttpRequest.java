@@ -1,6 +1,9 @@
 package org.mtcg.httpserver;
 
 import lombok.Getter;
+
+import org.mtcg.db.UserDbAccess;
+import org.mtcg.models.User;
 import org.mtcg.utils.Method;
 import org.mtcg.utils.exceptions.HttpRequestException;
 
@@ -15,6 +18,8 @@ public class HttpRequest {
   private final List<String> pathSegments;
   private final String body;
   private final Map<String, String> headers;
+  private final User user;
+  private final UserDbAccess userDbAccess;
 
   public String getServiceRoute() {
     if (this.pathSegments == null || this.pathSegments.isEmpty()) {
@@ -24,7 +29,12 @@ public class HttpRequest {
     }
   }
 
-  public HttpRequest(final BufferedReader reader) throws HttpRequestException {
+  public User getUserFromToken(String token) {
+    return userDbAccess.getUserFromToken(token);
+  }
+
+  public HttpRequest(final BufferedReader reader, UserDbAccess userdbAccess) throws HttpRequestException {
+    this.userDbAccess = userdbAccess;
     this.headers = new HashMap<>(); // Initialize the headers map
 
     try {
@@ -76,6 +86,14 @@ public class HttpRequest {
         // No body if Content-Length is absent
         this.body = "";
       }
+
+      String authorization = headers.get("Authorization");
+      if (authorization != null && authorization.startsWith("Bearer ")) {
+        String token = authorization.substring(7);
+        this.user = getUserFromToken(token); // Set the user object
+      } else {
+        user = null;
+      }
     } catch (IOException | NumberFormatException e) {
       throw new HttpRequestException("Error parsing HTTP request", e);
     }
@@ -83,16 +101,20 @@ public class HttpRequest {
 
   // Constructor for Unit tests
 
-  public HttpRequest(final Method method, final String path, final String body) {
-    this(method, path, body, new HashMap<>());
+  public HttpRequest(final Method method, final String path, final String body, final String token) {
+    this(method, path, body, new HashMap<>(), token, new UserDbAccess());
   }
 
-  public HttpRequest(final Method method, final String path, final String body, final Map<String, String> headers) {
+  public HttpRequest(final Method method, final String path, final String body, final Map<String, String> headers,
+      String token, UserDbAccess userdbAccess) {
     this.method = method;
     this.path = path;
     this.body = body;
     this.headers = headers != null ? headers : new HashMap<>();
     this.pathSegments = new ArrayList<>();
+
+    this.userDbAccess = userdbAccess;
+    this.user = getUserFromToken(token);
 
     // Split path into segments
     final String[] pathParts = path.split("/");
