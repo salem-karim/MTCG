@@ -43,7 +43,6 @@ CREATE TABLE stack_cards (
     PRIMARY KEY (stack_id, card_id)
 );
 
-
 -- Create Transactions Table without foreign key to packages
 CREATE TABLE transactions (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -67,7 +66,6 @@ FOREIGN KEY (package_id) REFERENCES packages (id);
 ALTER TABLE packages
 ADD CONSTRAINT fk_packages_transaction_id
 FOREIGN KEY (transaction_id) REFERENCES transactions (id);
-
 
 CREATE TABLE package_cards (
     package_id uuid NOT NULL REFERENCES packages (id) ON DELETE CASCADE,
