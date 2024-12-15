@@ -76,8 +76,7 @@ CREATE TABLE package_cards (
 -- Create Decks Table (to define the user's active deck)
 CREATE TABLE decks (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id uuid REFERENCES users (id) ON DELETE CASCADE,
-    card_id uuid REFERENCES cards (id) ON DELETE CASCADE
+    user_id uuid REFERENCES users (id) ON DELETE CASCADE
 );
 CREATE TABLE deck_cards (
     deck_id uuid NOT NULL REFERENCES decks (id) ON DELETE CASCADE,
