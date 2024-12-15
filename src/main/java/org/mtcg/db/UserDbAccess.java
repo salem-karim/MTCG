@@ -19,6 +19,9 @@ public class UserDbAccess {
       // Initialize the user's stack
       initializeUserStack(connection, user);
 
+      // Initialize the user's stack
+      initializeUserDeck(connection, user);
+
       // Fulfil transaction if both got executed successfully
       connection.commit();
       logger.info("User and their stack added successfully: " + user.getUsername());
@@ -28,6 +31,20 @@ public class UserDbAccess {
       logger.severe("Failed to add user or initialize stack: " + e.getMessage());
       handleRollback();
       return false;
+    }
+  }
+
+  private void initializeUserDeck(Connection connection, User user) throws SQLException {
+    final String deckSQL = "INSERT INTO decks (id, user_id) VALUES (?, ?)";
+    try (final var deckStmt = connection.prepareStatement(deckSQL)) {
+      final UUID deckId = UUID.randomUUID();
+      deckStmt.setObject(1, deckId);
+      deckStmt.setObject(2, user.getId());
+
+      final int stackAffectedRows = deckStmt.executeUpdate();
+      if (stackAffectedRows == 0) {
+        throw new SQLException("Failed to initialize user stack in the database.");
+      }
     }
   }
 
