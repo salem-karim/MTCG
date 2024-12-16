@@ -6,7 +6,6 @@ import java.util.UUID;
 import org.mtcg.db.DeckDbAccess;
 import org.mtcg.httpserver.HttpRequest;
 import org.mtcg.httpserver.HttpResponse;
-import org.mtcg.models.Card;
 import org.mtcg.models.Deck;
 import org.mtcg.utils.ContentType;
 import org.mtcg.utils.HttpStatus;
@@ -31,15 +30,20 @@ public class DeckController extends Controller {
       final UUID deckId = deckDbAccess.getDeckId(request.getUser().getId());
       final Deck deck = deckDbAccess.getDeckCards(deckId);
       if (deck == null) {
-        return new HttpResponse(HttpStatus.OK, ContentType.JSON, "");
+        return new HttpResponse(HttpStatus.OK, ContentType.JSON,
+            createJsonMessage("message", "No deck found"));
       } else if (deck.getCards().length == 4) {
         if (request.getPath().contains("format=plain")) {
-          String cardString = "";
+          StringBuilder cardString = new StringBuilder();
           for (final var card : deck.getCards()) {
-            cardString += "ID: " + card.getId() + " Name: " + card.getName() + "\nDamage: " + card.getDamage()
-                + " Element/Type: " + card.getElement() + '/' + card.getCardType() + '\n';
+            cardString.append("ID: ").append(card.getId())
+                .append(" Name: ").append(card.getName())
+                .append("\nDamage: ").append(card.getDamage())
+                .append(" Element/Type: ").append(card.getElement())
+                .append('/').append(card.getCardType())
+                .append('\n');
           }
-          return new HttpResponse(HttpStatus.OK, ContentType.PLAIN_TEXT, cardString);
+          return new HttpResponse(HttpStatus.OK, ContentType.PLAIN_TEXT, cardString.toString());
         } else {
           try {
             // Serialize the cards array to JSON
@@ -50,19 +54,22 @@ public class DeckController extends Controller {
 
           } catch (JsonProcessingException e) {
             System.out.println("Failed to serialize cards to JSON: " + e.getMessage());
-            return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "Error serializing cards.\n");
+            return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON,
+                createJsonMessage("error", "Error serializing cards"));
           }
         }
       } else {
-        return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Wrong Number of Cards in Deck\n");
+        return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
+            createJsonMessage("error", "Wrong number of cards in deck"));
       }
     } catch (final IllegalArgumentException e) {
       System.out.println(e.getMessage());
-      return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Wrong Number of Cards in Deck\n");
+      return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
+          createJsonMessage("error", "Wrong number of cards in deck"));
     } catch (final HttpRequestException e) {
       System.out.println(e.getMessage());
       return new HttpResponse(HttpStatus.UNAUTHORIZED, ContentType.JSON,
-          "Authorization header is missing or invalid\n");
+          createJsonMessage("error", "Authorization header is missing or invalid"));
     }
   }
 
@@ -75,26 +82,31 @@ public class DeckController extends Controller {
       final UUID deckId = deckDbAccess.getDeckId(request.getUser().getId());
       boolean updated = deckDbAccess.configureDeck(deckId, cardIds);
       if (updated) {
-        return new HttpResponse(HttpStatus.CREATED, ContentType.JSON, "Deck got configured\n");
+        return new HttpResponse(HttpStatus.CREATED, ContentType.JSON,
+            createJsonMessage("message", "Deck got configured successfully"));
       } else {
-        return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Bad Request\n");
+        return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
+            createJsonMessage("error", "Bad Request"));
       }
     } catch (IllegalArgumentException e) {
       System.out.println(e.getMessage());
-      return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Not 4 cards in Request Body\n");
+      return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
+          createJsonMessage("error", "Not 4 cards in request body"));
 
     } catch (final HttpRequestException e) {
       System.out.println(e.getMessage());
       return new HttpResponse(HttpStatus.UNAUTHORIZED, ContentType.JSON,
-          "Authorization header is missing or invalid\n");
+          createJsonMessage("error", "Authorization header is missing or invalid"));
 
     } catch (final SQLException e) {
       System.out.println(e);
-      return new HttpResponse(HttpStatus.CONFLICT, ContentType.JSON, "User already exists\n");
+      return new HttpResponse(HttpStatus.CONFLICT, ContentType.JSON,
+          createJsonMessage("error", "User already exists"));
 
     } catch (final JsonProcessingException e) {
       System.out.println(e.getMessage());
-      return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Invalid request format\n");
+      return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
+          createJsonMessage("error", "Invalid request format"));
     }
   }
 }

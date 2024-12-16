@@ -28,29 +28,32 @@ public class PackageController extends Controller {
       // Construct the cards from the request body
       final Card[] cards = getObjectMapper().readValue(request.getBody(), Card[].class);
 
-      // Make the Package OBJECT
+      // Make the Package object
       final var pkg = new Package(cards, request.getUser().getId());
       final boolean added = pkgDbAccess.addPackage(pkg);
 
       if (added) {
-        return new HttpResponse(HttpStatus.CREATED, ContentType.JSON, "Package created successfully\n");
+        return new HttpResponse(HttpStatus.CREATED, ContentType.JSON,
+            createJsonMessage("message", "Package created successfully"));
       } else {
-        return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Bad Request\n");
+        return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
+            createJsonMessage("error", "Bad Request"));
       }
 
     } catch (final JsonProcessingException e) {
       System.out.println(e.getMessage());
-      return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Invalid request format\n");
+      return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
+          createJsonMessage("error", "Invalid request format"));
 
     } catch (final IllegalArgumentException e) {
       System.out.println(e.getMessage());
-      return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Not 5 cards in Request Body\n");
+      return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
+          createJsonMessage("error", "Not 5 cards in Request Body"));
 
     } catch (final HttpRequestException e) {
       System.out.println(e.getMessage());
       return new HttpResponse(HttpStatus.UNAUTHORIZED, ContentType.JSON,
-          "Authorization header is missing or invalid\n");
+          createJsonMessage("error", "Authorization header is missing or invalid"));
     }
   }
-
 }

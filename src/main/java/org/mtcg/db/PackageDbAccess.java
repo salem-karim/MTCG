@@ -2,41 +2,48 @@ package org.mtcg.db;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 import org.mtcg.models.Package;
 
 public class PackageDbAccess {
   private static final Logger logger = Logger.getLogger(PackageDbAccess.class.getName());
+  private final CardDbAccess cardDbAccess = new CardDbAccess();
 
   public boolean addPackage(final Package pkg) {
     logger.info("Attempting to add a new package");
 
     try (final var connection = DbConnection.getConnection()) {
-      connection.setAutoCommit(false);
+      try {
+        connection.setAutoCommit(false);
 
-      // Perform all the necessary database operations
-      insertPackage(connection, pkg);
-      insertCards(connection, pkg);
-      insertPackageCards(connection, pkg);
+        // Perform all the necessary database operations
+        insertPackage(connection, pkg);
+        cardDbAccess.insertCards(connection, pkg);
+        insertPackageCards(connection, pkg);
 
-      // Commit transaction if all operations succeed
-      connection.commit();
-      logger.info("Package added successfully to the database");
-      return true;
+        // Commit transaction if all operations succeed
+        connection.commit();
+        logger.info("Package added successfully to the database");
+        return true;
 
+      } catch (final SQLException e) {
+        logger.severe("Failed to add package: " + e.getMessage());
+        handleRollback(connection);
+        return false; // Indicate failure
+      }
     } catch (final SQLException e) {
-      logger.severe("Failed to add package: " + e.getMessage());
-      handleRollback();
-      return false; // Indicate failure
+      logger.severe("Failed to add Package: " + e.getMessage());
+      return false;
     }
+
   }
 
-  private void handleRollback() {
+  private void handleRollback(final Connection con) {
     try {
-      final Connection connection = DbConnection.getConnection();
-      if (!connection.getAutoCommit()) {
-        connection.rollback();
+      if (!con.getAutoCommit()) {
+        con.rollback();
         logger.info("Transaction rolled back due to failure.");
       }
     } catch (final SQLException rollbackEx) {
@@ -51,25 +58,9 @@ public class PackageDbAccess {
       packageStmt.setObject(1, pkg.getId());
       packageStmt.setObject(2, pkg.getUserId());
       final int rowsAffected = packageStmt.executeUpdate();
-      if (rowsAffected != 1) {
+      if (rowsAffected == 0) {
         throw new SQLException("Failed to create package record in database.");
       }
-    }
-  }
-
-  // Insert cards into the `cards` table using batch execution
-  private void insertCards(final Connection connection, final Package pkg) throws SQLException {
-    final String insertCardSQL = "INSERT INTO cards (id, name, damage, element_type, card_type) VALUES (?, ?, ?, ?, ?)";
-    try (final var cardStmt = connection.prepareStatement(insertCardSQL)) {
-      for (final var card : pkg.getCards()) {
-        cardStmt.setObject(1, card.getId());
-        cardStmt.setString(2, card.getName());
-        cardStmt.setDouble(3, card.getDamage()); // No `final var` here for primitives
-        cardStmt.setString(4, card.getElement().name().toLowerCase());
-        cardStmt.setString(5, card.getCardType().name().toLowerCase());
-        cardStmt.addBatch();
-      }
-      cardStmt.executeBatch(); // Execute all insert statements
     }
   }
 
@@ -84,6 +75,44 @@ public class PackageDbAccess {
       }
       packageCardStmt.executeBatch(); // Execute all insert statements
     }
+  }
+
+  public UUID getRandomPackage(final Connection connection) throws SQLException {
+    final String randomPkgSQL = "SELECT * FROM packages WHERE transaction_id IS NULL ORDER BY RANDOM() LIMIT 1";
+    try (final var stmt = connection.prepareStatement(randomPkgSQL);
+        var result = stmt.executeQuery()) {
+      if (result.next()) {
+        return (UUID) result.getObject("id");
+      } else {
+        logger.warning("No available Packages to be sold");
+        return null;
+      }
+    }
+  }
+
+  public UUID[] getPackageCards(final Connection connection, final UUID pkgId) throws SQLException {
+    int index = 0;
+    final int PKG_SIZE = 5;
+    final var cardIds = new UUID[PKG_SIZE];
+    final String getPkgCardsSQL = "SELECT id FROM cards " +
+        "INNER JOIN package_cards ON cards.id = package_cards.card_id " +
+        "WHERE package_cards.package_id = ?";
+
+    try (final var stmt = connection.prepareStatement(getPkgCardsSQL)) {
+      stmt.setObject(1, pkgId);
+      try (final var result = stmt.executeQuery()) {
+        while (result.next()) {
+          if (index >= PKG_SIZE)
+            throw new IllegalStateException("Package contains more than " + PKG_SIZE + " cards!");
+          cardIds[index] = (UUID) result.getObject("id");
+          index++;
+        }
+        if (index != PKG_SIZE) {
+          throw new IllegalStateException("Package contains fewer than " + PKG_SIZE + " cards!");
+        }
+      }
+    }
+    return cardIds;
   }
 
 }

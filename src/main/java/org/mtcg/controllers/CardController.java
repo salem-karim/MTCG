@@ -21,7 +21,7 @@ public class CardController extends Controller {
   public HttpResponse listCards(final HttpRequest request) {
     if (request.getUser() == null) {
       return new HttpResponse(HttpStatus.UNAUTHORIZED, ContentType.JSON,
-          "Authorization header is missing or invalid\n");
+          createJsonMessage("error", "Authorization header is missing or invalid"));
     }
     final ArrayList<Card> cards = cardDbAccess.getCards(request.getUser().getId());
     if (cards != null) {
@@ -34,10 +34,11 @@ public class CardController extends Controller {
 
       } catch (JsonProcessingException e) {
         System.out.println("Failed to serialize cards to JSON: " + e.getMessage());
-        return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "Error serializing cards.");
+        return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON,
+            createJsonMessage("error", "Error serializing cards."));
       }
     } else {
-      return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Bad Request\n");
+      return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, createJsonMessage("error", "Bad Request"));
     }
   }
 }

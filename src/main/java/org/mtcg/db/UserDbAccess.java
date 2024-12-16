@@ -10,33 +10,30 @@ public class UserDbAccess {
   private static final Logger logger = Logger.getLogger(UserDbAccess.class.getName());
 
   public boolean addUser(final User user) throws SQLException {
-    try (Connection connection = DbConnection.getConnection()) {
+    final var connection = DbConnection.getConnection();
+    try {
       connection.setAutoCommit(false);
-
       // Add the user to the database
       addUserToDatabase(connection, user);
-
       // Initialize the user's stack
       initializeUserStack(connection, user);
-
       // Initialize the user's deck
       initializeUserDeck(connection, user);
-
       // Commit the transaction if all operations succeed
       connection.commit();
       logger.info("User and their stack added successfully: " + user.getUsername());
       return true;
-
     } catch (final SQLException e) {
       // Check for unique constraint violation (PostgreSQL SQL state 23505)
       if ("23505".equals(e.getSQLState())) {
         throw new SQLException("Conflict: User with this ID or username already exists.", e);
       }
-
       // Handle other exceptions
       logger.severe("Failed to add user or initialize stack: " + e.getMessage());
-      handleRollback();
+      handleRollback(connection);
       return false;
+    } finally {
+      connection.close();
     }
   }
 
@@ -84,11 +81,10 @@ public class UserDbAccess {
     }
   }
 
-  private void handleRollback() {
+  private void handleRollback(final Connection con) {
     try {
-      final Connection connection = DbConnection.getConnection();
-      if (!connection.getAutoCommit()) {
-        connection.rollback();
+      if (!con.getAutoCommit()) {
+        con.rollback();
         logger.info("Transaction rolled back due to failure.");
       }
     } catch (final SQLException rollbackEx) {
@@ -150,20 +146,18 @@ public class UserDbAccess {
     return null;
   }
 
-  public void updateUserCoins(final User user) throws SQLException {
-    try (final var connection = DbConnection.getConnection()) {
-      final String updateUserCoinsSQL = "UPDATE users SET coins = ? WHERE id = ?";
-      try (final var updateCoinsStmt = connection.prepareStatement(updateUserCoinsSQL)) {
-        updateCoinsStmt.setInt(1, user.getCoins());
-        updateCoinsStmt.setObject(2, user.getId());
+  public boolean updateUserCoins(final Connection connection, final User user) throws SQLException {
+    final String updateUserCoinsSQL = "UPDATE users SET coins = ? WHERE id = ?";
+    try (final var updateCoinsStmt = connection.prepareStatement(updateUserCoinsSQL)) {
+      updateCoinsStmt.setInt(1, user.getCoins());
+      updateCoinsStmt.setObject(2, user.getId());
 
-        final int affectedRows = updateCoinsStmt.executeUpdate();
-        if (affectedRows == 0) {
-          throw new SQLException("Failed to update user coins. No user found with the given ID.");
-        }
+      final int affectedRows = updateCoinsStmt.executeUpdate();
+      if (affectedRows == 0) {
+        throw new SQLException("Failed to update user coins. No user found with the given ID.");
       }
+      return true;
     }
-
   }
 
 }

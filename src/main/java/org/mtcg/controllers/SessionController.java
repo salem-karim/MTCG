@@ -20,19 +20,23 @@ public class SessionController extends Controller {
 
   public HttpResponse loginUser(final HttpRequest request) {
     try {
-      // Use custom Class to Contsruct User Information without hashing to verify
+      // Use custom Class to Construct User Information without hashing to verify
       // session
-      final var user = getObjectMapper().readValue(request.getBody(), LoginCredentials.class);
-      final User userFromDb = userDbAccess.getUserByUsername(user.getUsername());
+      final var loginCredentials = getObjectMapper().readValue(request.getBody(), LoginCredentials.class);
+      final User userFromDb = userDbAccess.getUserByUsername(loginCredentials.getUsername());
+
       // Get User from the DB and verify passwords && Handle possible Errors
-      if (userFromDb != null && userFromDb.verifyPassword(user.getPassword())) {
-        return new HttpResponse(HttpStatus.OK, ContentType.JSON, userFromDb.getToken() + '\n');
+      if (userFromDb != null && userFromDb.verifyPassword(loginCredentials.getPassword())) {
+        return new HttpResponse(HttpStatus.OK, ContentType.JSON,
+            createJsonMessage("token", userFromDb.getToken()));
       } else {
-        return new HttpResponse(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Wrong login credentials\n");
+        return new HttpResponse(HttpStatus.UNAUTHORIZED, ContentType.JSON,
+            createJsonMessage("error", "Wrong login credentials"));
       }
     } catch (final JsonProcessingException e) {
       System.out.println(e);
-      return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Invalid request format\n");
+      return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
+          createJsonMessage("error", "Invalid request format"));
     }
   }
 }

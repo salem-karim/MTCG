@@ -45,11 +45,11 @@ class PackageControllerTest {
   @Test
   void testAddPackage_Successful() throws Exception {
     // Prepare test data
-    UUID userId = UUID.randomUUID();
+    final UUID userId = UUID.randomUUID();
     when(mockUser.getId()).thenReturn(userId);
 
     // Prepare JSON representation of cards
-    String cardsJson = """
+    final String cardsJson = """
         [
             {"Id": "%s", "Name": "Ork", "Damage": 50.0},
             {"Id": "%s", "Name": "Water Spell", "Damage": 30.5},
@@ -70,16 +70,17 @@ class PackageControllerTest {
     when(mockPackageDbAccess.addPackage(any())).thenReturn(true);
 
     // Verify card parsing
-    Card[] parsedCards = objectMapper.readValue(cardsJson, Card[].class);
+    final Card[] parsedCards = objectMapper.readValue(cardsJson, Card[].class);
     assertEquals(5, parsedCards.length, "Should parse 5 cards correctly");
 
     // Call method under test
-    HttpResponse response = packageController.addPackage(mockRequest);
+    final HttpResponse response = packageController.addPackage(mockRequest);
+    final String shouldEqual = packageController.createJsonMessage("message", "Package created successfully");
 
     // Assertions
     assertEquals(HttpStatus.CREATED.code, response.getStatusCode(), "Status should be CREATED");
     assertEquals(ContentType.JSON.toString(), response.getContentType());
-    assertEquals("Package created successfully\n", response.getBody());
+    assertEquals(shouldEqual, response.getBody());
 
     // Verify that addPackage was called
     verify(mockPackageDbAccess).addPackage(any());
@@ -88,11 +89,11 @@ class PackageControllerTest {
   @Test
   void testAddPackage_InsufficientCards() throws Exception {
     // Prepare test data with fewer than 5 cards
-    UUID userId = UUID.randomUUID();
+    final UUID userId = UUID.randomUUID();
     when(mockUser.getId()).thenReturn(userId);
 
     // Prepare JSON representation of cards
-    String cardsJson = """
+    final String cardsJson = """
         [
             {"Id": "%s", "Name": "Ork", "Damage": 50.0},
             {"Id": "%s", "Name": "Water Spell", "Damage": 30.5},
@@ -107,12 +108,13 @@ class PackageControllerTest {
     when(mockRequest.getBody()).thenReturn(cardsJson);
 
     // Call method under test and expect an exception
-    HttpResponse response = packageController.addPackage(mockRequest);
+    final HttpResponse response = packageController.addPackage(mockRequest);
+    final String shouldEqual = packageController.createJsonMessage("error", "Not 5 cards in Request Body");
 
     // Assertions
     assertEquals(HttpStatus.BAD_REQUEST.code, response.getStatusCode());
     assertEquals(ContentType.JSON.toString(), response.getContentType());
-    assertEquals("Not 5 cards in Request Body\n", response.getBody());
+    assertEquals(shouldEqual, response.getBody());
   }
 
   @Test
@@ -121,22 +123,24 @@ class PackageControllerTest {
     when(mockRequest.getUser()).thenReturn(null);
 
     // Call method under test
-    HttpResponse response = packageController.addPackage(mockRequest);
+    final HttpResponse response = packageController.addPackage(mockRequest);
+    final String shouldEqual = packageController.createJsonMessage("error",
+        "Authorization header is missing or invalid");
 
     // Assertions
     assertEquals(HttpStatus.UNAUTHORIZED.code, response.getStatusCode());
     assertEquals(ContentType.JSON.toString(), response.getContentType());
-    assertEquals("Authorization header is missing or invalid\n", response.getBody());
+    assertEquals(shouldEqual, response.getBody());
   }
 
   @Test
   void testAddPackage_DatabaseFailure() throws Exception {
     // Prepare test data
-    UUID userId = UUID.randomUUID();
+    final UUID userId = UUID.randomUUID();
     when(mockUser.getId()).thenReturn(userId);
 
     // Prepare JSON representation of cards
-    String cardsJson = """
+    final String cardsJson = """
         [
             {"Id": "%s", "Name": "Ork", "Damage": 50.0},
             {"Id": "%s", "Name": "Water Spell", "Damage": 30.5},
@@ -157,11 +161,12 @@ class PackageControllerTest {
     when(mockPackageDbAccess.addPackage(any())).thenReturn(false);
 
     // Call method under test
-    HttpResponse response = packageController.addPackage(mockRequest);
+    final HttpResponse response = packageController.addPackage(mockRequest);
+    final String shouldEqual = packageController.createJsonMessage("error", "Bad Request");
 
     // Assertions
     assertEquals(HttpStatus.BAD_REQUEST.code, response.getStatusCode());
     assertEquals(ContentType.JSON.toString(), response.getContentType());
-    assertEquals("Bad Request\n", response.getBody());
+    assertEquals(shouldEqual, response.getBody());
   }
 }

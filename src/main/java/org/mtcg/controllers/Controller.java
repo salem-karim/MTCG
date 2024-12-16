@@ -19,4 +19,8 @@ public abstract class Controller {
       objectMapper.disable(SerializationFeature.INDENT_OUTPUT);
     }
   }
+
+  protected String createJsonMessage(String attribute, String message) {
+    return String.format("{\"%s\": \"%s\"}\n", attribute, message);
+  }
 }

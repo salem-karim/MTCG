@@ -7,14 +7,16 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 import org.mtcg.models.Card;
+import org.mtcg.models.Package;
 
 public class CardDbAccess {
   private static final Logger logger = Logger.getLogger(CardDbAccess.class.getName());
+  private final StackDbAccess stackDbAccess = new StackDbAccess();
 
   public ArrayList<Card> getCards(UUID id) {
     var cardList = new ArrayList<Card>();
     try (final var connection = DbConnection.getConnection()) {
-      UUID stackId = getStackId(connection, id);
+      UUID stackId = stackDbAccess.getStackId(connection, id);
       final String usersCardsSQL = "SELECT * FROM cards " +
           "INNER JOIN stack_cards ON cards.id = stack_cards.card_id " +
           "WHERE stack_cards.stack_id = ?";
@@ -38,18 +40,18 @@ public class CardDbAccess {
     }
   }
 
-  private UUID getStackId(Connection connection, UUID id) throws SQLException {
-    final String getStackIdSQL = "SELECT id FROM stacks WHERE user_id = ?";
-    try (final var stmt = connection.prepareStatement(getStackIdSQL)) {
-      stmt.setObject(1, id);
-      try (final var result = stmt.executeQuery()) {
-        if (result.next()) {
-          return (UUID) result.getObject("id");
-        } else {
-          logger.warning("User does not have a stack");
-          return null;
-        }
+  public void insertCards(final Connection connection, final Package pkg) throws SQLException {
+    final String insertCardSQL = "INSERT INTO cards (id, name, damage, element_type, card_type) VALUES (?, ?, ?, ?, ?)";
+    try (final var cardStmt = connection.prepareStatement(insertCardSQL)) {
+      for (final var card : pkg.getCards()) {
+        cardStmt.setObject(1, card.getId());
+        cardStmt.setString(2, card.getName());
+        cardStmt.setDouble(3, card.getDamage()); // No `final var` here for primitives
+        cardStmt.setString(4, card.getElement().name().toLowerCase());
+        cardStmt.setString(5, card.getCardType().name().toLowerCase());
+        cardStmt.addBatch();
       }
+      cardStmt.executeBatch(); // Execute all insert statements
     }
   }
 }
