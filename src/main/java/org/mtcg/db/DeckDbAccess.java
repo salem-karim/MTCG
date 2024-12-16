@@ -39,14 +39,12 @@ public class DeckDbAccess {
     try (final var connection = DbConnection.getConnection()) {
       final String deckCardsSQL = "SELECT * FROM cards " +
           "INNER JOIN deck_cards ON cards.id = deck_cards.card_id " +
-          "WHERE deck_cardds.deck_id = ?";
+          "WHERE deck_cards.deck_id = ?";
 
       try (final var stmt = connection.prepareStatement(deckCardsSQL)) {
         stmt.setObject(1, deckId);
         try (final var result = stmt.executeQuery()) {
           while (result.next()) {
-            if (index >= DECK_SIZE)
-              throw new IllegalStateException("Deck contains more than " + DECK_SIZE + " cards!");
             final var card = new Card(
                 (UUID) result.getObject("id"),
                 result.getString("name"),
@@ -54,29 +52,29 @@ public class DeckDbAccess {
             cards[index] = card;
             index++;
           }
-          if (index != DECK_SIZE) {
-            throw new IllegalStateException("Deck contains fewer than " + DECK_SIZE + " cards!");
-          }
         }
       }
     } catch (final SQLException e) {
       logger.log(Level.SEVERE, "SQL error while retrieving users decks Cards with Deck ID: " + deckId, e);
     }
+    if (index == 0) {
+      logger.log(Level.INFO, "No cards found for Deck ID: " + deckId);
+      return null;
+    }
     try {
-      final var deck = new Deck(cards, deckId);
-      return deck;
-    } catch (IllegalStateException e) {
-      throw new IllegalStateException(e.getMessage());
+      return new Deck(cards, deckId);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException(e.getMessage());
     }
   }
 
-  public boolean configureDeck(Deck deck) throws SQLException {
+  public boolean configureDeck(UUID deckId, UUID[] cardIds) throws SQLException {
     try (final var connection = DbConnection.getConnection()) {
       final String insertSQL = "INSERT INTO deck_cards (deck_id, card_id) VALUES (?, ?)";
       try (final var stmt = connection.prepareStatement(insertSQL)) {
-        for (final var card : deck.getCards()) {
-          stmt.setObject(1, deck.getId());
-          stmt.setObject(2, card.getId());
+        for (final var cardId : cardIds) {
+          stmt.setObject(1, deckId);
+          stmt.setObject(2, cardId);
           stmt.addBatch();
         }
         stmt.executeBatch();

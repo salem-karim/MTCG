@@ -10,7 +10,7 @@ public class DeckService extends DefaultService {
   public DeckService() {
     final var deckController = new DeckController();
     super.methods.put(Method.GET, deckController::getDeck);
-    super.methods.put(Method.PUT, deckController::updateDeck);
+    super.methods.put(Method.PUT, deckController::configureDeck);
   }
 
   @Override

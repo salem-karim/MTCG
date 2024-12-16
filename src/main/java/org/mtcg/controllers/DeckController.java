@@ -30,14 +30,14 @@ public class DeckController extends Controller {
 
       final UUID deckId = deckDbAccess.getDeckId(request.getUser().getId());
       final Deck deck = deckDbAccess.getDeckCards(deckId);
-      if (deck.getCards().length == 0) {
+      if (deck == null) {
         return new HttpResponse(HttpStatus.OK, ContentType.JSON, "");
       } else if (deck.getCards().length == 4) {
         if (request.getPath().contains("format=plain")) {
           String cardString = "";
           for (final var card : deck.getCards()) {
-            cardString += "ID: " + card.getId() + "Name: " + card.getName() + "Damage: " + card.getDamage()
-                + "\nElement/Type: " + card.getElement() + '/' + card.getCardType() + '\n';
+            cardString += "ID: " + card.getId() + " Name: " + card.getName() + "\nDamage: " + card.getDamage()
+                + " Element/Type: " + card.getElement() + '/' + card.getCardType() + '\n';
           }
           return new HttpResponse(HttpStatus.OK, ContentType.PLAIN_TEXT, cardString);
         } else {
@@ -50,15 +50,15 @@ public class DeckController extends Controller {
 
           } catch (JsonProcessingException e) {
             System.out.println("Failed to serialize cards to JSON: " + e.getMessage());
-            return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "Error serializing cards.");
+            return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "Error serializing cards.\n");
           }
         }
       } else {
-        return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Wrong Number of Cards in Deck");
+        return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Wrong Number of Cards in Deck\n");
       }
     } catch (final IllegalArgumentException e) {
       System.out.println(e.getMessage());
-      return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Wrong Number of Cards in Deck");
+      return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Wrong Number of Cards in Deck\n");
     } catch (final HttpRequestException e) {
       System.out.println(e.getMessage());
       return new HttpResponse(HttpStatus.UNAUTHORIZED, ContentType.JSON,
@@ -71,10 +71,9 @@ public class DeckController extends Controller {
       if (request.getUser() == null) {
         throw new HttpRequestException("User not Authorized");
       }
-      final Card[] cards = getObjectMapper().readValue(request.getBody(), Card[].class);
+      final UUID[] cardIds = getObjectMapper().readValue(request.getBody(), UUID[].class);
       final UUID deckId = deckDbAccess.getDeckId(request.getUser().getId());
-      final var deck = new Deck(cards, deckId);
-      boolean updated = deckDbAccess.configureDeck(deck);
+      boolean updated = deckDbAccess.configureDeck(deckId, cardIds);
       if (updated) {
         return new HttpResponse(HttpStatus.CREATED, ContentType.JSON, "Deck got configured\n");
       } else {
@@ -97,6 +96,5 @@ public class DeckController extends Controller {
       System.out.println(e.getMessage());
       return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Invalid request format\n");
     }
-
   }
 }

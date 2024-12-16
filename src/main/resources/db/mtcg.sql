@@ -54,7 +54,7 @@ CREATE TABLE transactions (
 -- Create Packages Table without foreign key to transactions
 CREATE TABLE packages (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id uuid UNIQUE REFERENCES users (id) ON DELETE CASCADE,
+    user_id uuid REFERENCES users (id) ON DELETE CASCADE,
     transaction_id uuid UNIQUE -- Placeholder for foreign key
 );
 
