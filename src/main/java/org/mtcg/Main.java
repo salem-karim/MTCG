@@ -2,6 +2,7 @@ package org.mtcg;
 
 import org.mtcg.httpserver.HttpServer;
 import org.mtcg.services.CardService;
+import org.mtcg.services.DeckService;
 import org.mtcg.services.PackageService;
 import org.mtcg.services.SessionService;
 import org.mtcg.services.TransactionService;
@@ -24,11 +25,8 @@ public class Main {
     router.addService("/transactions/packages", new TransactionService());
     //
     router.addService("/cards", new CardService());
-    // TODO: next is deck and maybe user/username
-    //
-    // Also has routers like /deck?format=plain
-    // router.addService("/deck", new DeckService());
-    //
+    router.addService("/deck", new DeckService());
+    router.addService("/deck?format=plain", new DeckService());
     // router.addService("/stats", new StatService);
     // router.addService("/scoreboard", new ScoreBoardService());
     // router.addService("/battles", new BattleService());

@@ -9,7 +9,7 @@ import org.mtcg.models.User;
 public class UserDbAccess {
   private static final Logger logger = Logger.getLogger(UserDbAccess.class.getName());
 
-  public boolean addUser(final User user) {
+  public boolean addUser(final User user) throws SQLException {
     try (Connection connection = DbConnection.getConnection()) {
       connection.setAutoCommit(false);
 
@@ -19,15 +19,21 @@ public class UserDbAccess {
       // Initialize the user's stack
       initializeUserStack(connection, user);
 
-      // Initialize the user's stack
+      // Initialize the user's deck
       initializeUserDeck(connection, user);
 
-      // Fulfil transaction if both got executed successfully
+      // Commit the transaction if all operations succeed
       connection.commit();
       logger.info("User and their stack added successfully: " + user.getUsername());
       return true;
 
     } catch (final SQLException e) {
+      // Check for unique constraint violation (PostgreSQL SQL state 23505)
+      if ("23505".equals(e.getSQLState())) {
+        throw new SQLException("Conflict: User with this ID or username already exists.", e);
+      }
+
+      // Handle other exceptions
       logger.severe("Failed to add user or initialize stack: " + e.getMessage());
       handleRollback();
       return false;

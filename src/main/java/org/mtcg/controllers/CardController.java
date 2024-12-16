@@ -9,7 +9,9 @@ import org.mtcg.models.Card;
 import org.mtcg.utils.ContentType;
 import org.mtcg.utils.HttpStatus;
 
-public class CardController {
+import com.fasterxml.jackson.core.JsonProcessingException;
+
+public class CardController extends Controller {
   private final CardDbAccess cardDbAccess;
 
   public CardController(CardDbAccess cardDbAccess) {
@@ -23,11 +25,17 @@ public class CardController {
     }
     final ArrayList<Card> cards = cardDbAccess.getCards(request.getUser().getId());
     if (cards != null) {
-      String cardsString = "\n";
-      for (Card card : cards) {
-        cardsString += card.getName() + '\n';
+      try {
+        // Serialize the cards array to JSON
+        String cardsJSON = getObjectMapper().writeValueAsString(cards);
+
+        // Return the serialized JSON string
+        return new HttpResponse(HttpStatus.OK, ContentType.JSON, cardsJSON);
+
+      } catch (JsonProcessingException e) {
+        System.out.println("Failed to serialize cards to JSON: " + e.getMessage());
+        return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "Error serializing cards.");
       }
-      return new HttpResponse(HttpStatus.OK, ContentType.JSON, cardsString + '\n');
     } else {
       return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Bad Request\n");
     }

@@ -1,5 +1,7 @@
 package org.mtcg.controllers;
 
+import java.sql.SQLException;
+
 import org.mtcg.db.UserDbAccess;
 import org.mtcg.httpserver.HttpRequest;
 import org.mtcg.httpserver.HttpResponse;
@@ -29,11 +31,14 @@ public class UserController extends Controller {
       if (added) {
         return new HttpResponse(HttpStatus.CREATED, ContentType.JSON, "User created successfully\n");
       } else {
-        return new HttpResponse(HttpStatus.CONFLICT, ContentType.JSON, "User already exists\n");
+        return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Bad Request\n");
       }
     } catch (final JsonProcessingException e) {
       System.out.println(e);
       return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "Invalid request format\n");
+    } catch (final SQLException e) {
+      System.out.println(e);
+      return new HttpResponse(HttpStatus.CONFLICT, ContentType.JSON, "User already exists\n");
     }
   }
 }
