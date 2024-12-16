@@ -20,7 +20,7 @@ public class CardDbAccess {
           "WHERE stack_cards.stack_id = ?";
       try (final var UserCardsStmt = connection.prepareStatement(usersCardsSQL)) {
         UserCardsStmt.setObject(1, stackId);
-        try (var result = UserCardsStmt.executeQuery()) {
+        try (final var result = UserCardsStmt.executeQuery()) {
           while (result.next()) {
             var card = new Card(
                 (UUID) result.getObject("id"),

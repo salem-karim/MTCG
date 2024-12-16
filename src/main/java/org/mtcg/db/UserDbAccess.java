@@ -40,7 +40,7 @@ public class UserDbAccess {
     }
   }
 
-  private void initializeUserDeck(Connection connection, User user) throws SQLException {
+  private void initializeUserDeck(final Connection connection, final User user) throws SQLException {
     final String deckSQL = "INSERT INTO decks (id, user_id) VALUES (?, ?)";
     try (final var deckStmt = connection.prepareStatement(deckSQL)) {
       final UUID deckId = UUID.randomUUID();
@@ -97,12 +97,12 @@ public class UserDbAccess {
   }
 
   public User getUserByUsername(final String username) {
-    try (Connection connection = DbConnection.getConnection()) {
+    try (final var connection = DbConnection.getConnection()) {
       final String sql = "SELECT id, username, password, token FROM users WHERE username = ?";
       final var preparedStatement = connection.prepareStatement(sql);
       preparedStatement.setString(1, username);
 
-      try (ResultSet resultSet = preparedStatement.executeQuery()) {
+      try (final var resultSet = preparedStatement.executeQuery()) {
         if (resultSet.next()) {
           final String token = resultSet.getString("token");
           final String hashedPassword = resultSet.getString("password");
@@ -119,17 +119,17 @@ public class UserDbAccess {
     return null;
   }
 
-  public User getUserFromToken(String token) {
+  public User getUserFromToken(final String token) {
     if (token == null || token.isEmpty()) {
       return null;
     }
-    try (Connection connection = DbConnection.getConnection()) {
+    try (final var connection = DbConnection.getConnection()) {
       // Prepare SQL to retrieve the user by token
       final String sql = "SELECT * FROM users WHERE token = ?";
       final var preparedStatement = connection.prepareStatement(sql);
       preparedStatement.setString(1, token);
 
-      try (ResultSet resultSet = preparedStatement.executeQuery()) {
+      try (final var resultSet = preparedStatement.executeQuery()) {
         if (resultSet.next()) {
           // Retrieve values from the ResultSet
           final UUID userId = (UUID) resultSet.getObject("id");
@@ -151,7 +151,7 @@ public class UserDbAccess {
   }
 
   public void updateUserCoins(final User user) throws SQLException {
-    try (var connection = DbConnection.getConnection()) {
+    try (final var connection = DbConnection.getConnection()) {
       final String updateUserCoinsSQL = "UPDATE users SET coins = ? WHERE id = ?";
       try (final var updateCoinsStmt = connection.prepareStatement(updateUserCoinsSQL)) {
         updateCoinsStmt.setInt(1, user.getCoins());
