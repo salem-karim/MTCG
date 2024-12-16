@@ -14,7 +14,6 @@ public class TransactionDbAccess {
   private final UserDbAccess userDbAccess = new UserDbAccess();
 
   public boolean buyPackage(final User user) {
-    // FIX: Error when buying Packages
     logger.info("Attempting to buy a package");
     try (final var connection = DbConnection.getConnection()) {
       connection.setAutoCommit(false); // Start transaction
