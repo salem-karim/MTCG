@@ -15,10 +15,10 @@ public class Main {
     Http.run();
   }
 
-  // TODO: Make the Router Dynamic
   private static Router configureRouter() {
     Router router = new Router();
     router.addService("/users", new UserService());
+    // TODO: figure out how to get the username from path
     // router.addService("/users/{username}", new UserService());
     router.addService("/sessions", new SessionService());
     router.addService("/packages", new PackageService());

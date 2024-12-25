@@ -5,7 +5,6 @@ import org.mtcg.services.Service;
 import java.util.HashMap;
 import java.util.Map;
 
-// TODO: Make the Router Dynamic
 public class Router implements IRouter {
   private final Map<String, Service> services = new HashMap<>();
 
