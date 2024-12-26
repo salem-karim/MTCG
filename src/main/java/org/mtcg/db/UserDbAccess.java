@@ -5,6 +5,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.mtcg.models.User;
+import org.mtcg.models.UserData;
 
 public class UserDbAccess {
   private static final Logger logger = Logger.getLogger(UserDbAccess.class.getName());
@@ -94,7 +95,7 @@ public class UserDbAccess {
 
   public User getUserByUsername(final String username) {
     try (final var connection = DbConnection.getConnection()) {
-      final String sql = "SELECT id, username, password, token FROM users WHERE username = ?";
+      final String sql = "SELECT * FROM users WHERE username = ?";
       final var preparedStatement = connection.prepareStatement(sql);
       preparedStatement.setString(1, username);
 
@@ -103,8 +104,15 @@ public class UserDbAccess {
           final String token = resultSet.getString("token");
           final String hashedPassword = resultSet.getString("password");
           final UUID id = (UUID) resultSet.getObject("id");
+          final int elo = resultSet.getInt("elo");
+          final int coins = resultSet.getInt("coins");
+          final int wins = resultSet.getInt("wins");
+          final int losses = resultSet.getInt("losses");
+          final String bio = resultSet.getString("bio");
+          final String image = resultSet.getString("image");
+          final String name = resultSet.getString("name");
           logger.info("User retrieved successfully: " + username);
-          return new User(username, token, hashedPassword, id);
+          return new User(id, username, name, bio, image, hashedPassword, coins, token, elo, wins, losses);
         } else {
           logger.warning("User not found: " + username);
         }
@@ -127,17 +135,18 @@ public class UserDbAccess {
 
       try (final var resultSet = preparedStatement.executeQuery()) {
         if (resultSet.next()) {
-          // Retrieve values from the ResultSet
-          final UUID userId = (UUID) resultSet.getObject("id");
           final String username = resultSet.getString("username");
-          final String password = resultSet.getString("password");
+          final String hashedPassword = resultSet.getString("password");
+          final UUID id = (UUID) resultSet.getObject("id");
+          final int elo = resultSet.getInt("elo");
           final int coins = resultSet.getInt("coins");
-
-          // Create and return the User object
-          final User user = new User(username, token, password, userId);
-          user.setCoins(coins);
-          logger.info("User retrieved successfully!");
-          return user;
+          final int wins = resultSet.getInt("wins");
+          final int losses = resultSet.getInt("losses");
+          final String bio = resultSet.getString("bio");
+          final String image = resultSet.getString("image");
+          final String name = resultSet.getString("name");
+          logger.info("User retrieved successfully: " + username);
+          return new User(id, username, name, bio, image, hashedPassword, coins, token, elo, wins, losses);
         }
       }
     } catch (final SQLException e) {
@@ -160,4 +169,25 @@ public class UserDbAccess {
     }
   }
 
+  public boolean updateUserData(final UserData userData, final String username) {
+    try (final var connection = DbConnection.getConnection()) {
+      final String sql = "UPDATE users SET name = ?, bio = ? , image = ? WHERE username = ?";
+      try (final var Stmt = connection.prepareStatement(sql)) {
+        Stmt.setString(1, userData.getUsername());
+        Stmt.setString(2, userData.getBio());
+        Stmt.setString(3, userData.getImage());
+        Stmt.setString(4, username);
+
+        final int affectedRows = Stmt.executeUpdate();
+        if (affectedRows == 0) {
+          throw new SQLException("Failed to update user coins. No user found with the given ID.");
+        } else {
+          return true;
+        }
+      }
+    } catch (final SQLException e) {
+      logger.warning("Failed to update user data of user: " + userData.getUsername());
+    }
+    return false;
+  }
 }

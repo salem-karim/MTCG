@@ -9,14 +9,9 @@ public class UserService extends DefaultService {
 
   public UserService() {
     final var userController = new UserController();
-    // userMethods.put(Method.GET, (HttpRequest req) -> {
-    // try {
-    // return this.userController.getUser(req);
-    // } catch (JsonProcessingException e) {
-    // throw new RuntimeException(e);
-    // }
-    // });
     super.methods.put(Method.POST, userController::addUser);
+    super.methods.put(Method.GET, userController::listUser);
+    super.methods.put(Method.PUT, userController::updateUser);
   }
 
   @Override

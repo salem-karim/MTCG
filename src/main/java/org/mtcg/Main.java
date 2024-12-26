@@ -18,20 +18,21 @@ public class Main {
   private static Router configureRouter() {
     Router router = new Router();
     router.addService("/users", new UserService());
-    // TODO: figure out how to get the username from path
-    // router.addService("/users/{username}", new UserService());
+    router.addService("/users/", new UserService());
     router.addService("/sessions", new SessionService());
     router.addService("/packages", new PackageService());
     router.addService("/transactions/packages", new TransactionService());
-    //
     router.addService("/cards", new CardService());
     router.addService("/deck", new DeckService());
     router.addService("/deck?format=plain", new DeckService());
     // router.addService("/stats", new StatService);
     // router.addService("/scoreboard", new ScoreBoardService());
-    // router.addService("/battles", new BattleService());
+    // TODO: if check in Service for POST req if tradings/ return a different
+    // controller method
     // router.addService("/tradings", new TradingService());
     // router.addService("/tradings/{UUID}", new TradingService());
+    //
+    // router.addService("/battles", new BattleService());
     return router;
   }
 }

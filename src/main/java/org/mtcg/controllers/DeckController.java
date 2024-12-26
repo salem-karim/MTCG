@@ -80,8 +80,8 @@ public class DeckController extends Controller {
       }
       final UUID[] cardIds = getObjectMapper().readValue(request.getBody(), UUID[].class);
       final UUID deckId = deckDbAccess.getDeckId(request.getUser().getId());
-      boolean updated = deckDbAccess.configureDeck(deckId, cardIds);
-      if (updated) {
+      boolean configure = deckDbAccess.configureDeck(deckId, cardIds);
+      if (configure) {
         return new HttpResponse(HttpStatus.CREATED, ContentType.JSON,
             createJsonMessage("message", "Deck got configured successfully"));
       } else {

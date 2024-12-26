@@ -15,7 +15,7 @@ import java.util.*;
 public class HttpRequest {
   private final Method method;
   private final String path;
-  private final List<String> pathSegments;
+  private final ArrayList<String> pathSegments;
   private final String body;
   private final Map<String, String> headers;
   private final User user;
@@ -53,7 +53,7 @@ public class HttpRequest {
       } else {
         throw new IOException("Empty request line");
       }
-      this.pathSegments = new LinkedList<>();
+      this.pathSegments = new ArrayList<>();
       final String[] pathParts = this.path.split("/");
       for (final String part : pathParts) {
         if (!part.isEmpty()) {

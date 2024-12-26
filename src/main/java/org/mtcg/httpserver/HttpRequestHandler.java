@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.mtcg.db.UserDbAccess;
+import org.mtcg.services.Service;
 import org.mtcg.utils.ContentType;
 import org.mtcg.utils.HttpStatus;
 import org.mtcg.utils.Router;
@@ -54,7 +55,7 @@ public class HttpRequestHandler implements Runnable {
     System.out.println("Headers: " + request.getHeaders());
     System.out.println("Body: " + request.getBody());
 
-    HttpResponse response;
+    HttpResponse response = null;
     if (request.getPath() == null) {
       response = new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "");
     } else if ("/".equals(request.getPath())) {
@@ -62,8 +63,14 @@ public class HttpRequestHandler implements Runnable {
       response = new HttpResponse(HttpStatus.OK, ContentType.HTML,
           "<html><body>Welcome to the homepage!</body></html>");
     } else {
+      Service service = null;
       // Otherwise use the router to get right Service and resolve it
-      final var service = this.router.resolve(request.getServiceRoute());
+      if (request.getServiceRoute().contains("/users/"))
+        service = this.router.resolve("/users/");
+      else if (request.getServiceRoute().contains("/tradings/"))
+        service = this.router.resolve("/tradings/");
+      else
+        service = this.router.resolve(request.getServiceRoute());
       if (service != null) {
         response = service.handle(request);
       } else {
