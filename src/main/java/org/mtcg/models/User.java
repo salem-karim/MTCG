@@ -21,8 +21,14 @@ public class User {
 
   @JsonIgnore
   private String password = "";
-  private int coins = 20;
   private String token = "";
+  private String bio = "";
+  private String image = "";
+  private String name = "";
+  private int coins = 20;
+  private int elo = 0;
+  private int wins = 0;
+  private int losses = 0;
 
   // Constructor for ObjectMapper
   @JsonCreator
@@ -37,11 +43,20 @@ public class User {
 
   // Additional constructor for retrieving from the database
   @JsonIgnore
-  public User(final String username, final String token, final String Password, final UUID id) {
+  public User(final UUID id, final String username, final String name, final String bio, final String image,
+      final String password,
+      final int coins, final String token, final int elo, final int wins, final int losses) {
     this.id = id;
-    this.token = token;
     this.username = username;
-    this.password = Password;
+    this.name = name;
+    this.bio = bio;
+    this.image = image;
+    this.password = password;
+    this.coins = coins;
+    this.token = token;
+    this.elo = elo;
+    this.wins = wins;
+    this.losses = losses;
   }
 
   // Method to hash the password
