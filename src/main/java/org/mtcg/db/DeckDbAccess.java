@@ -83,6 +83,8 @@ public class DeckDbAccess {
     } catch (final SQLException e) {
       if ("23505".equals(e.getSQLState())) {
         throw new SQLException("Conflict: Deck is already configured.", e);
+      } else if (e.getMessage().contains("A deck can only contain 4 cards")) {
+        throw new SQLException(e);
       }
       logger.severe("Failed to configure Deck: " + e.getMessage());
       return false;
