@@ -30,20 +30,14 @@ public class DeckController extends Controller {
       final UUID deckId = deckDbAccess.getDeckId(request.getUser().getId());
       final Deck deck = deckDbAccess.getDeckCards(deckId);
       if (deck == null) {
-        return new HttpResponse(HttpStatus.OK, ContentType.JSON,
-            createJsonMessage("message", "No deck found"));
+        return new HttpResponse(HttpStatus.NO_CONTENT, ContentType.JSON, "[ ]");
       } else if (deck.getCards().length == 4) {
         if (request.getPath().contains("format=plain")) {
-          StringBuilder cardString = new StringBuilder();
+          String cardString = "";
           for (final var card : deck.getCards()) {
-            cardString.append("ID: ").append(card.getId())
-                .append(" Name: ").append(card.getName())
-                .append("\nDamage: ").append(card.getDamage())
-                .append(" Element/Type: ").append(card.getElement())
-                .append('/').append(card.getCardType())
-                .append('\n');
+            cardString += card.toString();
           }
-          return new HttpResponse(HttpStatus.OK, ContentType.PLAIN_TEXT, cardString.toString());
+          return new HttpResponse(HttpStatus.OK, ContentType.PLAIN_TEXT, cardString);
         } else {
           try {
             // Serialize the cards array to JSON
@@ -69,7 +63,7 @@ public class DeckController extends Controller {
     } catch (final HttpRequestException e) {
       System.out.println(e.getMessage());
       return new HttpResponse(HttpStatus.UNAUTHORIZED, ContentType.JSON,
-          createJsonMessage("error", "Authorization header is missing or invalid"));
+          createJsonMessage("error", "Access token is missing or invalid"));
     }
   }
 
@@ -79,11 +73,16 @@ public class DeckController extends Controller {
         throw new HttpRequestException("User not Authorized");
       }
       final UUID[] cardIds = getObjectMapper().readValue(request.getBody(), UUID[].class);
+      // TODO: get Users Stack Id and with it get their card ids and check
+      //
+      // return new HttpResponse(HttpStatus.FORBIDDEN, ContentType.JSON,
+      // createJsonMessage("error", "At least one of the provided cards does not
+      // belong to the user or is not available."));
       final UUID deckId = deckDbAccess.getDeckId(request.getUser().getId());
       boolean configure = deckDbAccess.configureDeck(deckId, cardIds);
       if (configure) {
-        return new HttpResponse(HttpStatus.CREATED, ContentType.JSON,
-            createJsonMessage("message", "Deck got configured successfully"));
+        return new HttpResponse(HttpStatus.OK, ContentType.JSON,
+            createJsonMessage("message", "The deck has been successfully configured"));
       } else {
         return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
             createJsonMessage("error", "Bad Request"));
@@ -91,12 +90,12 @@ public class DeckController extends Controller {
     } catch (IllegalArgumentException e) {
       System.out.println(e.getMessage());
       return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
-          createJsonMessage("error", "Not 4 cards in request body"));
+          createJsonMessage("error", "The provided deck did not include the required amount of cards"));
 
     } catch (final HttpRequestException e) {
       System.out.println(e.getMessage());
       return new HttpResponse(HttpStatus.UNAUTHORIZED, ContentType.JSON,
-          createJsonMessage("error", "Authorization header is missing or invalid"));
+          createJsonMessage("error", "Access token is missing or invalid"));
 
     } catch (final SQLException e) {
       System.out.println(e);

@@ -11,7 +11,7 @@ public class PackageDbAccess {
   private static final Logger logger = Logger.getLogger(PackageDbAccess.class.getName());
   private final CardDbAccess cardDbAccess = new CardDbAccess();
 
-  public boolean addPackage(final Package pkg) {
+  public boolean addPackage(final Package pkg) throws SQLException {
     logger.info("Attempting to add a new package");
 
     try (final var connection = DbConnection.getConnection()) {
@@ -34,6 +34,9 @@ public class PackageDbAccess {
         return false; // Indicate failure
       }
     } catch (final SQLException e) {
+      if ("23505".equals(e.getSQLState())) {
+        throw new SQLException("Conflict: Card with this ID already exists in this Package.", e);
+      }
       logger.severe("Failed to add Package: " + e.getMessage());
       return false;
     }

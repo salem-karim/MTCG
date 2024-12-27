@@ -24,6 +24,8 @@ public class StackDbAccess {
   }
 
   public UUID getUserStack(final Connection connection, final UUID userId) throws SQLException {
+    // TODO:
+    // change this to actually get the Users Stack Cards
     final String stackSQL = "SELECT id FROM stacks WHERE user_id = ?";
     try (final var stmt = connection.prepareStatement(stackSQL)) {
       stmt.setObject(1, userId);

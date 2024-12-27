@@ -31,7 +31,7 @@ public class SessionController extends Controller {
             createJsonMessage("token", userFromDb.getToken()));
       } else {
         return new HttpResponse(HttpStatus.UNAUTHORIZED, ContentType.JSON,
-            createJsonMessage("error", "Wrong login credentials"));
+            createJsonMessage("error", "Invalid username/password provided"));
       }
     } catch (final JsonProcessingException e) {
       System.out.println(e);

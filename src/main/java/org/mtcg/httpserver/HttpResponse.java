@@ -13,7 +13,6 @@ public class HttpResponse {
   private final String body;
   private final String version;
   private final String host;
-  private final String response;
 
   public HttpResponse(final HttpStatus status, final ContentType contentType, final String body) {
     this.statusCode = status.code;
@@ -23,10 +22,14 @@ public class HttpResponse {
     this.version = "HTTP/1.1";
     this.host = "127.0.0.1";
     this.contentLength = body.length();
-    response = version + " " + statusCode + " " + statusMessage + "\r\n" +
+  }
+
+  @Override
+  public String toString() {
+    return version + " " + statusCode + " " + statusMessage + "\r\n" +
         "Host: " + host + "\r\n" +
         "Content-type: " + contentType + "\r\n" +
         "Content-length: " + contentLength + "\r\n" +
-        "\r\n" + this.body + "\n\n";
+        "\r\n" + body + "\n\n";
   }
 }
