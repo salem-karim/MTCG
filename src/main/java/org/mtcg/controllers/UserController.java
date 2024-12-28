@@ -60,9 +60,9 @@ public class UserController extends Controller {
       final var reqUser = request.getUser();
       final String username = request.getPathSegments().get(1);
       if (reqUser == null) {
-        throw new HttpRequestException("User not authorized");
+        throw new HttpRequestException("Access token is missing or invalid");
       } else if (!reqUser.getUsername().equals(username) && !reqUser.getUsername().equals("admin")) {
-        throw new HttpRequestException("User not authorized");
+        throw new HttpRequestException("Access token is missing or invalid");
       }
       final var user = userDbAccess.getUserByUsername(username);
       if (user == null) {
@@ -89,9 +89,9 @@ public class UserController extends Controller {
       final var reqUser = request.getUser();
       final String username = request.getPathSegments().get(1);
       if (reqUser == null) {
-        throw new HttpRequestException("User not authorized");
+        throw new HttpRequestException("Access token is missing or invalid");
       } else if (!reqUser.getUsername().equals(username) && !reqUser.getUsername().equals("admin")) {
-        throw new HttpRequestException("User not authorized");
+        throw new HttpRequestException("Access token is missing or invalid");
       }
       final var userData = getObjectMapper().readValue(request.getBody(), UserData.class);
       final boolean success = userDbAccess.updateUserData(userData, username);

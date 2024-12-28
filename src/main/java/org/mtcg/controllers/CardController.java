@@ -14,7 +14,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 public class CardController extends Controller {
   private final CardDbAccess cardDbAccess;
 
-  public CardController(CardDbAccess cardDbAccess) {
+  public CardController(final CardDbAccess cardDbAccess) {
     this.cardDbAccess = cardDbAccess;
   }
 
@@ -30,12 +30,12 @@ public class CardController extends Controller {
           return new HttpResponse(HttpStatus.NO_CONTENT, ContentType.JSON, "\n");
 
         // Serialize the cards array to JSON
-        String cardsJSON = getObjectMapper().writeValueAsString(cards);
+        final String cardsJSON = getObjectMapper().writeValueAsString(cards);
 
         // Return the serialized JSON string
         return new HttpResponse(HttpStatus.OK, ContentType.JSON, cardsJSON);
 
-      } catch (JsonProcessingException e) {
+      } catch (final JsonProcessingException e) {
         System.out.println("Failed to serialize cards to JSON: " + e.getMessage());
         return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON,
             createJsonMessage("error", "Error serializing cards."));
