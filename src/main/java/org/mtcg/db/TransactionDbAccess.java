@@ -31,7 +31,7 @@ public class TransactionDbAccess {
         }
 
         // Step 3: Get user's stack and insert cards
-        final UUID stackId = stackDbAccess.getUserStack(connection, user.getId());
+        final UUID stackId = stackDbAccess.getStackId(connection, user.getId());
         if (stackId == null) {
           return false; // No stack for user
         }

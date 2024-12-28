@@ -26,8 +26,8 @@ public class TransactionController extends Controller {
 
       // Step 2: Check user's coin balance
       if (user.getCoins() < 5) {
-        return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
-            createJsonMessage("error", "Insufficient funds"));
+        return new HttpResponse(HttpStatus.FORBIDDEN, ContentType.JSON,
+            createJsonMessage("error", "Not enough money for buying a card package"));
       }
       user.setCoins(user.getCoins() - 5);
 
@@ -38,14 +38,14 @@ public class TransactionController extends Controller {
             createJsonMessage("message", "Package purchased successfully"));
       } else {
         return new HttpResponse(HttpStatus.NOT_FOUND, ContentType.JSON,
-            createJsonMessage("error", "No packages available"));
+            createJsonMessage("error", "No card packages available for buying"));
       }
 
     } catch (HttpRequestException e) {
       // Catch exception thrown if authorization fails
       System.out.println(e.getMessage());
       return new HttpResponse(HttpStatus.UNAUTHORIZED, ContentType.JSON,
-          createJsonMessage("error", "Unauthorized"));
+          createJsonMessage("error", "Access token is missing or invalid"));
     }
   }
 }

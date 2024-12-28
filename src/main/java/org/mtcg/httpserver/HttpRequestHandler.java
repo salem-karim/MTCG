@@ -77,7 +77,7 @@ public class HttpRequestHandler implements Runnable {
         response = new HttpResponse(HttpStatus.NOT_FOUND, ContentType.JSON, "{\"error\":\"Not Found\"}\n");
       }
     }
-    writer.write(response.getResponse());
+    writer.write(response.toString());
     writer.flush();
   }
 }

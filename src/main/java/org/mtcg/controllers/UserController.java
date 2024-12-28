@@ -60,9 +60,9 @@ public class UserController extends Controller {
       final var reqUser = request.getUser();
       final String username = request.getPathSegments().get(1);
       if (reqUser == null) {
-        throw new HttpRequestException("User not authorized");
+        throw new HttpRequestException("Access token is missing or invalid");
       } else if (!reqUser.getUsername().equals(username) && !reqUser.getUsername().equals("admin")) {
-        throw new HttpRequestException("User not authorized");
+        throw new HttpRequestException("Access token is missing or invalid");
       }
       final var user = userDbAccess.getUserByUsername(username);
       if (user == null) {
@@ -80,7 +80,7 @@ public class UserController extends Controller {
     } catch (final HttpRequestException e) {
       System.out.println(e.getMessage());
       return new HttpResponse(HttpStatus.UNAUTHORIZED, ContentType.JSON,
-          createJsonMessage("error", "Authorization header is missing or invalid"));
+          createJsonMessage("error", "Access token is missing or invalid"));
     }
   }
 
@@ -89,9 +89,9 @@ public class UserController extends Controller {
       final var reqUser = request.getUser();
       final String username = request.getPathSegments().get(1);
       if (reqUser == null) {
-        throw new HttpRequestException("User not authorized");
+        throw new HttpRequestException("Access token is missing or invalid");
       } else if (!reqUser.getUsername().equals(username) && !reqUser.getUsername().equals("admin")) {
-        throw new HttpRequestException("User not authorized");
+        throw new HttpRequestException("Access token is missing or invalid");
       }
       final var userData = getObjectMapper().readValue(request.getBody(), UserData.class);
       final boolean success = userDbAccess.updateUserData(userData, username);
@@ -99,14 +99,14 @@ public class UserController extends Controller {
         return new HttpResponse(HttpStatus.OK, ContentType.JSON,
             createJsonMessage("message", "User successfully updated"));
       } else {
-        return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON,
-            createJsonMessage("error", "Failed to add user"));
+        return new HttpResponse(HttpStatus.NOT_FOUND, ContentType.JSON,
+            createJsonMessage("error", "User not found"));
       }
 
     } catch (final HttpRequestException e) {
       System.out.println(e.getMessage());
       return new HttpResponse(HttpStatus.UNAUTHORIZED, ContentType.JSON,
-          createJsonMessage("error", "Authorization header is missing or invalid"));
+          createJsonMessage("error", "Access token is missing or invalid"));
     } catch (final JsonProcessingException e) {
       System.out.println(e);
       return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,

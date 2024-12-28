@@ -17,7 +17,7 @@ CREATE TABLE users (
     username varchar(50) UNIQUE NOT NULL,
     password varchar(100) NOT NULL,
     coins int DEFAULT 20 NOT NULL CHECK (coins >= 0),
-    elo int DEFAULT 0 NOT NULL,
+    elo int DEFAULT 100 NOT NULL,
     token varchar(255) NOT NULL,
     bio varchar(255) DEFAULT '' NOT NULL,
     image varchar(255) DEFAULT '' NOT NULL,

@@ -47,4 +47,11 @@ public class Card {
     this.element = element;
   }
 
+  @Override
+  public String toString() {
+    return "ID: " + id + " Name: " + name +
+        "\nDamage: " + damage + " Element/Type: " +
+        element + '/' + cardType + '\n';
+  }
+
 }

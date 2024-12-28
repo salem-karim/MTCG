@@ -1,5 +1,7 @@
 package org.mtcg.controllers;
 
+import java.sql.SQLException;
+
 import org.mtcg.db.PackageDbAccess;
 import org.mtcg.httpserver.HttpRequest;
 import org.mtcg.httpserver.HttpResponse;
@@ -23,6 +25,10 @@ public class PackageController extends Controller {
       // Get user from token
       if (request.getUser() == null) {
         throw new HttpRequestException("User not Authorized");
+      }
+      if (!request.getUser().getUsername().equals("admin")) {
+        return new HttpResponse(HttpStatus.FORBIDDEN, ContentType.JSON,
+            createJsonMessage("error", "Provided user is not \"admin\""));
       }
 
       // Construct the cards from the request body
@@ -53,7 +59,12 @@ public class PackageController extends Controller {
     } catch (final HttpRequestException e) {
       System.out.println(e.getMessage());
       return new HttpResponse(HttpStatus.UNAUTHORIZED, ContentType.JSON,
-          createJsonMessage("error", "Authorization header is missing or invalid"));
+          createJsonMessage("error", "Access token is missing or invalid"));
+    } catch (final SQLException e) {
+      System.out.println(e.getMessage());
+      return new HttpResponse(HttpStatus.CONFLICT, ContentType.JSON,
+          createJsonMessage("error", "At least one card in the package already exists"));
+
     }
   }
 }

@@ -1,10 +1,11 @@
 package org.mtcg.models;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class UserStats {
-  @JsonProperty("Name")
-  private String name;
+  @JsonProperty("Username")
+  private String username;
 
   @JsonProperty("Elo")
   private int elo;
@@ -15,14 +16,12 @@ public class UserStats {
   @JsonProperty("Losses")
   private int losses;
 
-  // Constructor to create from User (and potentially a Stats object if you have
-  // one)
-  public static UserStats fromUser(User user, int wins, int losses) {
-    UserStats stats = new UserStats();
-    stats.name = user.getUsername();
-    stats.elo = user.getElo();
-    stats.wins = wins;
-    stats.losses = losses;
-    return stats;
+  @JsonCreator
+  public UserStats(@JsonProperty("Username") final String username, @JsonProperty("Elo") final int elo,
+      @JsonProperty("Wins") final int wins, @JsonProperty("Losses") final int losses) {
+    this.username = username;
+    this.elo = elo;
+    this.wins = wins;
+    this.losses = losses;
   }
 }

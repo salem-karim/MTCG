@@ -14,25 +14,28 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 public class CardController extends Controller {
   private final CardDbAccess cardDbAccess;
 
-  public CardController(CardDbAccess cardDbAccess) {
+  public CardController(final CardDbAccess cardDbAccess) {
     this.cardDbAccess = cardDbAccess;
   }
 
   public HttpResponse listCards(final HttpRequest request) {
     if (request.getUser() == null) {
       return new HttpResponse(HttpStatus.UNAUTHORIZED, ContentType.JSON,
-          createJsonMessage("error", "Authorization header is missing or invalid"));
+          createJsonMessage("error", "Access token is missing or invalid"));
     }
     final ArrayList<Card> cards = cardDbAccess.getCards(request.getUser().getId());
     if (cards != null) {
       try {
+        if (cards.isEmpty())
+          return new HttpResponse(HttpStatus.NO_CONTENT, ContentType.JSON, "\n");
+
         // Serialize the cards array to JSON
-        String cardsJSON = getObjectMapper().writeValueAsString(cards);
+        final String cardsJSON = getObjectMapper().writeValueAsString(cards);
 
         // Return the serialized JSON string
         return new HttpResponse(HttpStatus.OK, ContentType.JSON, cardsJSON);
 
-      } catch (JsonProcessingException e) {
+      } catch (final JsonProcessingException e) {
         System.out.println("Failed to serialize cards to JSON: " + e.getMessage());
         return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON,
             createJsonMessage("error", "Error serializing cards."));

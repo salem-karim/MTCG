@@ -1,11 +1,14 @@
 package org.mtcg.db;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.mtcg.models.User;
 import org.mtcg.models.UserData;
+import org.mtcg.models.UserStats;
 
 public class UserDbAccess {
   private static final Logger logger = Logger.getLogger(UserDbAccess.class.getName());
@@ -189,5 +192,27 @@ public class UserDbAccess {
       logger.warning("Failed to update user data of user: " + userData.getUsername());
     }
     return false;
+  }
+
+  public List<UserStats> getAllUserStats() {
+    final var allUserstats = new ArrayList<UserStats>();
+    try (final var connection = DbConnection.getConnection()) {
+      final String sql = "SELECT username, elo, wins, losses FROM users ORDER BY elo DESC";
+      final var Stmt = connection.prepareStatement(sql);
+      try (final var result = Stmt.executeQuery()) {
+        while (result.next()) {
+          allUserstats.add(new UserStats(
+              result.getString("username"),
+              result.getInt("elo"),
+              result.getInt("wins"),
+              result.getInt("losses")));
+        }
+      }
+      return allUserstats;
+    } catch (SQLException e) {
+      System.out.println(e);
+      logger.warning("Failed to get all Users Stats");
+      return null;
+    }
   }
 }

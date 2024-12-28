@@ -2,6 +2,9 @@ package org.mtcg.db;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -23,18 +26,20 @@ public class StackDbAccess {
     }
   }
 
-  public UUID getUserStack(final Connection connection, final UUID userId) throws SQLException {
-    final String stackSQL = "SELECT id FROM stacks WHERE user_id = ?";
-    try (final var stmt = connection.prepareStatement(stackSQL)) {
-      stmt.setObject(1, userId);
-      try (final var result = stmt.executeQuery()) {
-        if (result.next()) {
-          return (UUID) result.getObject("id");
-        } else {
-          logger.warning("User does not have a stack");
-          return null;
+  public Set<UUID> getUserStack(final UUID userId) throws SQLException {
+    try (final var connection = DbConnection.getConnection()) {
+      final var stackId = getStackId(connection, userId);
+      final Set<UUID> cardIds = new HashSet<>();
+      final String stackSQL = "SELECT * FROM stack_cards WHERE stack_id = ?";
+      try (final var stmt = connection.prepareStatement(stackSQL)) {
+        stmt.setObject(1, stackId);
+        try (final var result = stmt.executeQuery()) {
+          while (result.next()) {
+            cardIds.add((UUID) result.getObject("card_id"));
+          }
         }
       }
+      return cardIds;
     }
   }
 
