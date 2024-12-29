@@ -13,10 +13,10 @@ public class CardDbAccess {
   private static final Logger logger = Logger.getLogger(CardDbAccess.class.getName());
   private final StackDbAccess stackDbAccess = new StackDbAccess();
 
-  public ArrayList<Card> getCards(UUID id) {
-    var cardList = new ArrayList<Card>();
+  public ArrayList<Card> getCards(final UUID id) {
+    final var cardList = new ArrayList<Card>();
     try (final var connection = DbConnection.getConnection()) {
-      UUID stackId = stackDbAccess.getStackId(connection, id);
+      final UUID stackId = stackDbAccess.getStackId(connection, id);
       final String usersCardsSQL = "SELECT * FROM cards " +
           "INNER JOIN stack_cards ON cards.id = stack_cards.card_id " +
           "WHERE stack_cards.stack_id = ?";
@@ -24,7 +24,7 @@ public class CardDbAccess {
         UserCardsStmt.setObject(1, stackId);
         try (final var result = UserCardsStmt.executeQuery()) {
           while (result.next()) {
-            var card = new Card(
+            final var card = new Card(
                 (UUID) result.getObject("id"),
                 result.getString("name"),
                 result.getDouble("damage"));
@@ -34,7 +34,7 @@ public class CardDbAccess {
       }
       logger.info("Transaction executed successfully");
       return cardList;
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       logger.severe("Failed to list Users Cards: " + e.getMessage());
       return null;
     }

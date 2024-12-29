@@ -1,6 +1,5 @@
 package org.mtcg.utils;
 
-
 import org.mtcg.services.UserService;
 
 import org.junit.jupiter.api.Test;
@@ -11,8 +10,8 @@ public class RouterTest {
 
   @Test
   public void testAddService() {
-    Router router = new Router();
-    UserService userService = new UserService();
+    final Router router = new Router();
+    final UserService userService = new UserService();
     router.addService("/users", userService);
 
     assertNotNull(router.resolve("/users"));
@@ -20,8 +19,8 @@ public class RouterTest {
 
   @Test
   public void testRemoveService() {
-    Router router = new Router();
-    UserService userService = new UserService();
+    final Router router = new Router();
+    final UserService userService = new UserService();
     router.addService("/users", userService);
     router.removeService("/users");
 

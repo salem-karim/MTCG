@@ -1,6 +1,7 @@
 package org.mtcg;
 
 import org.mtcg.httpserver.HttpServer;
+import org.mtcg.services.BattleService;
 import org.mtcg.services.CardService;
 import org.mtcg.services.DeckService;
 import org.mtcg.services.PackageService;
@@ -30,13 +31,9 @@ public class Main {
     router.addService("/deck?format=plain", new DeckService());
     router.addService("/stats", new StatService());
     router.addService("/scoreboard", new ScoreBoardService());
-    //
-    // TODO: if check in Service for POST req if tradings/ return a different
-    // controller method
+    router.addService("/battles", new BattleService());
     router.addService("/tradings", new TradingService());
     router.addService("/tradings/", new TradingService());
-    //
-    // router.addService("/battles", new BattleService());
     return router;
   }
 }

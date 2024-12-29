@@ -19,17 +19,17 @@ public class Card {
     NORMAL
   }
 
-  private UUID id;
+  private final UUID id;
   private String name = "";
   private double damage = 0.0;
-  private CardType cardType;
-  private Element element;
+  private final CardType cardType;
+  private final Element element;
 
   // Constructor with @JsonProperty annotations on parameters
   public Card(
-      @JsonProperty("Id") UUID id,
-      @JsonProperty("Name") String name,
-      @JsonProperty("Damage") double damage) {
+      @JsonProperty("Id") final UUID id,
+      @JsonProperty("Name") final String name,
+      @JsonProperty("Damage") final double damage) {
     this.id = id;
     this.name = name;
     this.damage = damage;
@@ -39,7 +39,7 @@ public class Card {
   }
 
   // Constructor for DB Queries and Testing
-  public Card(UUID id, String name, double damage, CardType cardType, Element element) {
+  public Card(final UUID id, final String name, final double damage, final CardType cardType, final Element element) {
     this.id = id;
     this.name = name;
     this.damage = damage;

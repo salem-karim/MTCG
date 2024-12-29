@@ -19,7 +19,7 @@ public class TransactionController extends Controller {
   public HttpResponse buyPackage(final HttpRequest request) {
     try {
       // Step 1: Get user from token
-      User user = request.getUser();
+      final User user = request.getUser();
       if (user == null) {
         throw new HttpRequestException("User not Authorized");
       }
@@ -30,10 +30,8 @@ public class TransactionController extends Controller {
             createJsonMessage("error", "Not enough money for buying a card package"));
       }
       user.setCoins(user.getCoins() - 5);
-
       // Step 3: Attempt to buy package
-      boolean success = transactionDbAccess.buyPackage(user);
-      if (success) {
+      if (transactionDbAccess.buyPackage(user)) {
         return new HttpResponse(HttpStatus.CREATED, ContentType.JSON,
             createJsonMessage("message", "Package purchased successfully"));
       } else {
@@ -41,7 +39,7 @@ public class TransactionController extends Controller {
             createJsonMessage("error", "No card packages available for buying"));
       }
 
-    } catch (HttpRequestException e) {
+    } catch (final HttpRequestException e) {
       // Catch exception thrown if authorization fails
       System.out.println(e.getMessage());
       return new HttpResponse(HttpStatus.UNAUTHORIZED, ContentType.JSON,

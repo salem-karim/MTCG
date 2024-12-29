@@ -8,13 +8,13 @@ import lombok.Getter;
 @Getter
 public class UserData {
   @JsonProperty("Name")
-  private final String username;
+  private String username = "";
 
   @JsonProperty("Bio")
-  private final String bio;
+  private String bio = "";
 
   @JsonProperty("Image")
-  private final String image;
+  private String image = "";
 
   @JsonCreator
   public UserData(@JsonProperty("Username") final String username,

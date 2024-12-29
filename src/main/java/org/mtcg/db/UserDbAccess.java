@@ -41,61 +41,6 @@ public class UserDbAccess {
     }
   }
 
-  private void initializeUserDeck(final Connection connection, final User user) throws SQLException {
-    final String deckSQL = "INSERT INTO decks (id, user_id) VALUES (?, ?)";
-    try (final var deckStmt = connection.prepareStatement(deckSQL)) {
-      final UUID deckId = UUID.randomUUID();
-      deckStmt.setObject(1, deckId);
-      deckStmt.setObject(2, user.getId());
-
-      final int stackAffectedRows = deckStmt.executeUpdate();
-      if (stackAffectedRows == 0) {
-        throw new SQLException("Failed to initialize user stack in the database.");
-      }
-    }
-  }
-
-  private void addUserToDatabase(final Connection connection, final User user) throws SQLException {
-    final String userSQL = "INSERT INTO users (id, username, password, token) VALUES (?, ?, ?, ?)";
-    try (final var preparedStatement = connection.prepareStatement(userSQL)) {
-
-      preparedStatement.setObject(1, user.getId());
-      preparedStatement.setString(2, user.getUsername());
-      preparedStatement.setString(3, user.getPassword());
-      preparedStatement.setString(4, user.getToken());
-
-      final int userAffectedRows = preparedStatement.executeUpdate();
-      if (userAffectedRows == 0) {
-        throw new SQLException("Failed to insert user record into the database.");
-      }
-    }
-  }
-
-  private void initializeUserStack(final Connection connection, final User user) throws SQLException {
-    final String stackSQL = "INSERT INTO stacks (id, user_id) VALUES (?, ?)";
-    try (final var stackStmt = connection.prepareStatement(stackSQL)) {
-      final UUID stackId = UUID.randomUUID();
-      stackStmt.setObject(1, stackId);
-      stackStmt.setObject(2, user.getId());
-
-      final int stackAffectedRows = stackStmt.executeUpdate();
-      if (stackAffectedRows == 0) {
-        throw new SQLException("Failed to initialize user stack in the database.");
-      }
-    }
-  }
-
-  private void handleRollback(final Connection con) {
-    try {
-      if (!con.getAutoCommit()) {
-        con.rollback();
-        logger.info("Transaction rolled back due to failure.");
-      }
-    } catch (final SQLException rollbackEx) {
-      logger.severe("Rollback failed: " + rollbackEx.getMessage());
-    }
-  }
-
   public User getUserByUsername(final String username) {
     try (final var connection = DbConnection.getConnection()) {
       final String sql = "SELECT * FROM users WHERE username = ?";
@@ -209,10 +154,65 @@ public class UserDbAccess {
         }
       }
       return allUserstats;
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       System.out.println(e);
       logger.warning("Failed to get all Users Stats");
       return null;
+    }
+  }
+
+  private void initializeUserDeck(final Connection connection, final User user) throws SQLException {
+    final String deckSQL = "INSERT INTO decks (id, user_id) VALUES (?, ?)";
+    try (final var deckStmt = connection.prepareStatement(deckSQL)) {
+      final UUID deckId = UUID.randomUUID();
+      deckStmt.setObject(1, deckId);
+      deckStmt.setObject(2, user.getId());
+
+      final int stackAffectedRows = deckStmt.executeUpdate();
+      if (stackAffectedRows == 0) {
+        throw new SQLException("Failed to initialize user stack in the database.");
+      }
+    }
+  }
+
+  private void addUserToDatabase(final Connection connection, final User user) throws SQLException {
+    final String userSQL = "INSERT INTO users (id, username, password, token) VALUES (?, ?, ?, ?)";
+    try (final var preparedStatement = connection.prepareStatement(userSQL)) {
+
+      preparedStatement.setObject(1, user.getId());
+      preparedStatement.setString(2, user.getUsername());
+      preparedStatement.setString(3, user.getPassword());
+      preparedStatement.setString(4, user.getToken());
+
+      final int userAffectedRows = preparedStatement.executeUpdate();
+      if (userAffectedRows == 0) {
+        throw new SQLException("Failed to insert user record into the database.");
+      }
+    }
+  }
+
+  private void initializeUserStack(final Connection connection, final User user) throws SQLException {
+    final String stackSQL = "INSERT INTO stacks (id, user_id) VALUES (?, ?)";
+    try (final var stackStmt = connection.prepareStatement(stackSQL)) {
+      final UUID stackId = UUID.randomUUID();
+      stackStmt.setObject(1, stackId);
+      stackStmt.setObject(2, user.getId());
+
+      final int stackAffectedRows = stackStmt.executeUpdate();
+      if (stackAffectedRows == 0) {
+        throw new SQLException("Failed to initialize user stack in the database.");
+      }
+    }
+  }
+
+  private void handleRollback(final Connection con) {
+    try {
+      if (!con.getAutoCommit()) {
+        con.rollback();
+        logger.info("Transaction rolled back due to failure.");
+      }
+    } catch (final SQLException rollbackEx) {
+      logger.severe("Rollback failed: " + rollbackEx.getMessage());
     }
   }
 }

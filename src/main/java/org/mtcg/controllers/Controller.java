@@ -20,7 +20,7 @@ public abstract class Controller {
     }
   }
 
-  protected String createJsonMessage(String attribute, String message) {
+  protected String createJsonMessage(final String attribute, final String message) {
     return String.format("{\"%s\": \"%s\"}\n", attribute, message);
   }
 }

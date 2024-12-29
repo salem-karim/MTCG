@@ -10,7 +10,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class StatController extends Controller {
 
-  public HttpResponse listUsersStats(HttpRequest request) {
+  public HttpResponse listUsersStats(final HttpRequest request) {
     final var user = request.getUser();
     if (user == null) {
       return new HttpResponse(HttpStatus.UNAUTHORIZED, ContentType.JSON,
@@ -18,10 +18,8 @@ public class StatController extends Controller {
     } else {
       try {
         final var userStats = new UserStats(user.getUsername(), user.getElo(), user.getWins(), user.getLosses());
-        final String statsJSON = getObjectMapper().writeValueAsString(userStats);
-        return new HttpResponse(HttpStatus.OK, ContentType.JSON, statsJSON);
-
-      } catch (JsonProcessingException e) {
+        return new HttpResponse(HttpStatus.OK, ContentType.JSON, getObjectMapper().writeValueAsString(userStats));
+      } catch (final JsonProcessingException e) {
         return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
             createJsonMessage("error", "User not fetched correctly"));
       }

@@ -5,16 +5,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class UserStats {
   @JsonProperty("Username")
-  private String username;
+  private String username = "";
 
   @JsonProperty("Elo")
-  private int elo;
+  private int elo = 0;
 
   @JsonProperty("Wins")
-  private int wins;
+  private int wins = 0;
 
   @JsonProperty("Losses")
-  private int losses;
+  private int losses = 0;
 
   @JsonCreator
   public UserStats(@JsonProperty("Username") final String username, @JsonProperty("Elo") final int elo,

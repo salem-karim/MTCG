@@ -9,9 +9,15 @@ public class TradingService extends DefaultService {
 
   public TradingService() {
     final var tradingController = new TradingController();
-    super.methods.put(Method.POST, tradingController::createDeal);
     super.methods.put(Method.GET, tradingController::listDeals);
     super.methods.put(Method.DELETE, tradingController::deleteDeal);
+    super.methods.put(Method.POST, (final HttpRequest req) -> {
+      if (req.getServiceRoute().contains("/tradings/")) {
+        return tradingController.trade(req);
+      } else {
+        return tradingController.createDeal(req);
+      }
+    });
   }
 
   @Override

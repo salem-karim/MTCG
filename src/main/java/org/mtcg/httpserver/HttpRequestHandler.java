@@ -44,10 +44,6 @@ public class HttpRequestHandler implements Runnable {
     }
   }
 
-  private HttpRequest parseRequest(final BufferedReader reader) throws HttpRequestException {
-    return new HttpRequest(reader, new UserDbAccess());
-  }
-
   public void handleRequest(final PrintWriter writer, final HttpRequest request) throws IOException {
     System.out.println("Received request:");
     System.out.println("Method: " + request.getMethod());
@@ -79,5 +75,9 @@ public class HttpRequestHandler implements Runnable {
     }
     writer.write(response.toString());
     writer.flush();
+  }
+
+  private HttpRequest parseRequest(final BufferedReader reader) throws HttpRequestException {
+    return new HttpRequest(reader, new UserDbAccess());
   }
 }

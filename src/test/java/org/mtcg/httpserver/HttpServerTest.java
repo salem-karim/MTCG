@@ -20,7 +20,7 @@ public class HttpServerTest {
 
   @BeforeEach
   public void setUp() {
-    Router router = new Router();
+    final Router router = new Router();
     server = new HttpServer(8080, router);
     serverThread = new Thread(server);
     serverThread.start();
@@ -48,17 +48,17 @@ public class HttpServerTest {
     Thread.sleep(1000);
 
     // Send a test request to the server
-    URI uri = URI.create("http://localhost:8080/");
-    HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
+    final URI uri = URI.create("http://localhost:8080/");
+    final HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
     connection.setRequestMethod("GET");
 
-    int responseCode = connection.getResponseCode();
+    final int responseCode = connection.getResponseCode();
     assertEquals(200, responseCode);
 
     // Read the response
-    BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+    final BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
     String inputLine;
-    StringBuilder content = new StringBuilder();
+    final StringBuilder content = new StringBuilder();
     while ((inputLine = in.readLine()) != null) {
       content.append(inputLine);
     }

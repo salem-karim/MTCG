@@ -11,7 +11,7 @@ import org.mtcg.models.Deck;
 public class DeckDbAccess {
   private static final Logger logger = Logger.getLogger(DeckDbAccess.class.getName());
 
-  public UUID getDeckId(UUID id) {
+  public UUID getDeckId(final UUID id) {
     try (final var connection = DbConnection.getConnection()) {
       final String IdSQL = "SELECT id FROM decks WHERE user_id = ?";
 
@@ -32,7 +32,7 @@ public class DeckDbAccess {
     return null;
   }
 
-  public Deck getDeckCards(UUID deckId) {
+  public Deck getDeckCards(final UUID deckId) {
     int index = 0;
     final int DECK_SIZE = 4;
     final var cards = new Card[DECK_SIZE];
@@ -63,12 +63,12 @@ public class DeckDbAccess {
     }
     try {
       return new Deck(cards, deckId);
-    } catch (IllegalArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       throw new IllegalArgumentException(e.getMessage());
     }
   }
 
-  public boolean configureDeck(UUID deckId, UUID[] cardIds) throws SQLException {
+  public boolean configureDeck(final UUID deckId, final UUID[] cardIds) throws SQLException {
     try (final var connection = DbConnection.getConnection()) {
       final String insertSQL = "INSERT INTO deck_cards (deck_id, card_id) VALUES (?, ?)";
       try (final var stmt = connection.prepareStatement(insertSQL)) {

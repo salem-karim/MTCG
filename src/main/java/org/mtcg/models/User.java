@@ -59,14 +59,14 @@ public class User {
     this.losses = losses;
   }
 
-  // Method to hash the password
-  private String hashPassword(final String password) {
-    return BCrypt.hashpw(password, BCrypt.gensalt());
-  }
-
   // Method to verify the password during login
   @JsonIgnore
   public boolean verifyPassword(final String password) {
     return BCrypt.checkpw(password, this.password);
+  }
+
+  // Method to hash the password
+  private String hashPassword(final String password) {
+    return BCrypt.hashpw(password, BCrypt.gensalt());
   }
 }

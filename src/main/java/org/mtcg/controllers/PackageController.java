@@ -16,7 +16,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 public class PackageController extends Controller {
   private final PackageDbAccess pkgDbAccess;
 
-  public PackageController(PackageDbAccess packageDbAccess) {
+  public PackageController(final PackageDbAccess packageDbAccess) {
     this.pkgDbAccess = packageDbAccess;
   }
 

@@ -2,7 +2,6 @@ package org.mtcg.db;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -11,7 +10,7 @@ import java.util.logging.Logger;
 public class StackDbAccess {
   private static final Logger logger = Logger.getLogger(StackDbAccess.class.getName());
 
-  public UUID getStackId(Connection connection, UUID id) throws SQLException {
+  public UUID getStackId(final Connection connection, final UUID id) throws SQLException {
     final String getStackIdSQL = "SELECT id FROM stacks WHERE user_id = ?";
     try (final var stmt = connection.prepareStatement(getStackIdSQL)) {
       stmt.setObject(1, id);

@@ -43,43 +43,6 @@ public class PackageDbAccess {
 
   }
 
-  private void handleRollback(final Connection con) {
-    try {
-      if (!con.getAutoCommit()) {
-        con.rollback();
-        logger.info("Transaction rolled back due to failure.");
-      }
-    } catch (final SQLException rollbackEx) {
-      logger.severe("Rollback failed: " + rollbackEx.getMessage());
-    }
-  }
-
-  // Insert the package into the `packages` table
-  private void insertPackage(final Connection connection, final Package pkg) throws SQLException {
-    final String insertPackageSQL = "INSERT INTO packages (id, user_id) VALUES (?, ?)";
-    try (final var packageStmt = connection.prepareStatement(insertPackageSQL)) {
-      packageStmt.setObject(1, pkg.getId());
-      packageStmt.setObject(2, pkg.getUserId());
-      final int rowsAffected = packageStmt.executeUpdate();
-      if (rowsAffected == 0) {
-        throw new SQLException("Failed to create package record in database.");
-      }
-    }
-  }
-
-  // Insert relationships into the `package_cards` table
-  private void insertPackageCards(final Connection connection, final Package pkg) throws SQLException {
-    final String insertPackageCardsSQL = "INSERT INTO package_cards (package_id, card_id) VALUES (?, ?)";
-    try (final var packageCardStmt = connection.prepareStatement(insertPackageCardsSQL)) {
-      for (final var card : pkg.getCards()) {
-        packageCardStmt.setObject(1, pkg.getId());
-        packageCardStmt.setObject(2, card.getId());
-        packageCardStmt.addBatch();
-      }
-      packageCardStmt.executeBatch(); // Execute all insert statements
-    }
-  }
-
   public UUID getRandomPackage(final Connection connection) throws SQLException {
     final String randomPkgSQL = "SELECT * FROM packages WHERE transaction_id IS NULL LIMIT 1";
     // final String randomPkgSQL = "SELECT * FROM packages WHERE transaction_id IS
@@ -118,6 +81,43 @@ public class PackageDbAccess {
       }
     }
     return cardIds;
+  }
+
+  private void handleRollback(final Connection con) {
+    try {
+      if (!con.getAutoCommit()) {
+        con.rollback();
+        logger.info("Transaction rolled back due to failure.");
+      }
+    } catch (final SQLException rollbackEx) {
+      logger.severe("Rollback failed: " + rollbackEx.getMessage());
+    }
+  }
+
+  // Insert the package into the `packages` table
+  private void insertPackage(final Connection connection, final Package pkg) throws SQLException {
+    final String insertPackageSQL = "INSERT INTO packages (id, user_id) VALUES (?, ?)";
+    try (final var packageStmt = connection.prepareStatement(insertPackageSQL)) {
+      packageStmt.setObject(1, pkg.getId());
+      packageStmt.setObject(2, pkg.getUserId());
+      final int rowsAffected = packageStmt.executeUpdate();
+      if (rowsAffected == 0) {
+        throw new SQLException("Failed to create package record in database.");
+      }
+    }
+  }
+
+  // Insert relationships into the `package_cards` table
+  private void insertPackageCards(final Connection connection, final Package pkg) throws SQLException {
+    final String insertPackageCardsSQL = "INSERT INTO package_cards (package_id, card_id) VALUES (?, ?)";
+    try (final var packageCardStmt = connection.prepareStatement(insertPackageCardsSQL)) {
+      for (final var card : pkg.getCards()) {
+        packageCardStmt.setObject(1, pkg.getId());
+        packageCardStmt.setObject(2, card.getId());
+        packageCardStmt.addBatch();
+      }
+      packageCardStmt.executeBatch(); // Execute all insert statements
+    }
   }
 
 }

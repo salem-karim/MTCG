@@ -45,12 +45,12 @@ public class DeckController extends Controller {
         } else {
           try {
             // Serialize the cards array to JSON
-            String cardJSON = objectMapper.writeValueAsString(deck.getCards());
+            final String cardJSON = objectMapper.writeValueAsString(deck.getCards());
 
             // Now return the HTTP response with the serialized JSON
             return new HttpResponse(HttpStatus.OK, ContentType.JSON, cardJSON);
 
-          } catch (JsonProcessingException e) {
+          } catch (final JsonProcessingException e) {
             System.out.println("Failed to serialize cards to JSON: " + e.getMessage());
             return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON,
                 createJsonMessage("error", "Error serializing cards"));
@@ -90,7 +90,7 @@ public class DeckController extends Controller {
         }
       }
       final UUID deckId = deckDbAccess.getDeckId(request.getUser().getId());
-      boolean configure = deckDbAccess.configureDeck(deckId, cardIds);
+      final boolean configure = deckDbAccess.configureDeck(deckId, cardIds);
       if (configure) {
         return new HttpResponse(HttpStatus.OK, ContentType.JSON,
             createJsonMessage("message", "The deck has been successfully configured"));
