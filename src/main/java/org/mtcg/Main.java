@@ -7,6 +7,7 @@ import org.mtcg.services.PackageService;
 import org.mtcg.services.ScoreBoardService;
 import org.mtcg.services.SessionService;
 import org.mtcg.services.StatService;
+import org.mtcg.services.TradingService;
 import org.mtcg.services.TransactionService;
 import org.mtcg.services.UserService;
 import org.mtcg.utils.Router;
@@ -32,8 +33,8 @@ public class Main {
     //
     // TODO: if check in Service for POST req if tradings/ return a different
     // controller method
-    // router.addService("/tradings", new TradingService());
-    // router.addService("/tradings/{UUID}", new TradingService());
+    router.addService("/tradings", new TradingService());
+    router.addService("/tradings/", new TradingService());
     //
     // router.addService("/battles", new BattleService());
     return router;
