@@ -1,5 +1,6 @@
 package org.mtcg.db;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -45,11 +46,10 @@ public class DeckDbAccess {
         stmt.setObject(1, deckId);
         try (final var result = stmt.executeQuery()) {
           while (result.next()) {
-            final var card = new Card(
+            cards[index] = new Card(
                 (UUID) result.getObject("id"),
                 result.getString("name"),
                 result.getDouble("damage"));
-            cards[index] = card;
             index++;
           }
         }
@@ -68,26 +68,63 @@ public class DeckDbAccess {
     }
   }
 
-  public boolean configureDeck(final UUID deckId, final UUID[] cardIds) throws SQLException {
+  public boolean configureDeck(final UUID deckId, final UUID[] cardIds, final UUID userId) throws SQLException {
     try (final var connection = DbConnection.getConnection()) {
-      final String insertSQL = "INSERT INTO deck_cards (deck_id, card_id) VALUES (?, ?)";
-      try (final var stmt = connection.prepareStatement(insertSQL)) {
-        for (final var cardId : cardIds) {
-          stmt.setObject(1, deckId);
-          stmt.setObject(2, cardId);
-          stmt.addBatch();
-        }
-        stmt.executeBatch();
+      try {
+        connection.setAutoCommit(false); // Start transaction
+
+        insertDeckCards(connection, deckId, cardIds); // Add cards to the deck
+        new StackDbAccess().updateStacksDeckId(deckId, userId, cardIds); // Update user's stack
+
+        connection.commit(); // Commit the transaction if all steps succeed
         return true;
+      } catch (SQLException e) {
+        handleRollback(connection); // Rollback transaction on failure
+
+        // Re-throw specific exceptions or handle them accordingly
+        if ("23505".equals(e.getSQLState())) {
+          throw new SQLException("Conflict: Deck is already configured.", e);
+        } else if (e.getMessage().contains("A deck can only contain 4 cards")) {
+          throw new SQLException(e);
+        } else if (e.getMessage()
+            .contains("One of the cards is either not in the user's stack or is part of a trading deal.")) {
+          throw e;
+        }
+
+        logger.severe("Failed to configure Deck: " + e.getMessage());
+        return false; // Indicate failure if not re-throwing
       }
+    }
+  }
+
+  private void insertDeckCards(final Connection connection, final UUID deckId, final UUID[] cardIds)
+      throws SQLException {
+    final String insertSQL = "INSERT INTO deck_cards (deck_id, card_id) VALUES (?, ?)";
+    try (final var stmt = connection.prepareStatement(insertSQL)) {
+      for (final var cardId : cardIds) {
+        stmt.setObject(1, deckId);
+        stmt.setObject(2, cardId);
+        stmt.addBatch();
+      }
+      stmt.executeBatch();
     } catch (final SQLException e) {
       if ("23505".equals(e.getSQLState())) {
         throw new SQLException("Conflict: Deck is already configured.", e);
       } else if (e.getMessage().contains("A deck can only contain 4 cards")) {
-        throw new SQLException(e);
+        throw e;
       }
       logger.severe("Failed to configure Deck: " + e.getMessage());
-      return false;
+    }
+  }
+
+  private void handleRollback(final Connection con) {
+    try {
+      if (!con.getAutoCommit()) {
+        con.rollback();
+        logger.info("Transaction rolled back due to failure.");
+      }
+    } catch (final SQLException rollbackEx) {
+      logger.severe("Rollback failed: " + rollbackEx.getMessage());
     }
   }
 }

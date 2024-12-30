@@ -36,15 +36,38 @@ CREATE TABLE cards (
     card_type varchar(20) CHECK (card_type IN ('monster', 'spell')) NOT NULL
 );
 
+-- Create Decks Table (to define the user's active deck)
+CREATE TABLE decks (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id uuid UNIQUE REFERENCES users (id) ON DELETE CASCADE
+);
+CREATE TABLE deck_cards (
+    deck_id uuid NOT NULL REFERENCES decks (id) ON DELETE CASCADE,
+    card_id uuid NOT NULL REFERENCES cards (id) ON DELETE CASCADE,
+    PRIMARY KEY (deck_id, card_id)
+);
+
+-- Create Trading Deals Table (to manage trading)
+CREATE TABLE trading_deals (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id uuid REFERENCES users (id) ON DELETE CASCADE,
+    card_id uuid REFERENCES cards (id) ON DELETE CASCADE,
+    required_card_type varchar(20) CHECK (
+        required_card_type IN ('monster', 'spell')
+    ),
+    min_damage double precision
+);
+
 -- Create Stacks Table (to hold all cards of a user)
 CREATE TABLE stacks (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id uuid UNIQUE NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    is_in_deck boolean DEFAULT false NOT NULL
+    user_id uuid UNIQUE NOT NULL REFERENCES users (id) ON DELETE CASCADE
 );
 CREATE TABLE stack_cards (
     stack_id uuid NOT NULL REFERENCES stacks (id) ON DELETE CASCADE,
     card_id uuid NOT NULL REFERENCES cards (id) ON DELETE CASCADE,
+    deck_id uuid REFERENCES decks (id) ON DELETE SET NULL,
+    trade_id uuid REFERENCES trading_deals (id) ON DELETE SET NULL,
     PRIMARY KEY (stack_id, card_id)
 );
 
@@ -78,16 +101,6 @@ CREATE TABLE package_cards (
     PRIMARY KEY (package_id, card_id)
 );
 
--- Create Decks Table (to define the user's active deck)
-CREATE TABLE decks (
-    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id uuid UNIQUE REFERENCES users (id) ON DELETE CASCADE
-);
-CREATE TABLE deck_cards (
-    deck_id uuid NOT NULL REFERENCES decks (id) ON DELETE CASCADE,
-    card_id uuid NOT NULL REFERENCES cards (id) ON DELETE CASCADE,
-    PRIMARY KEY (deck_id, card_id)
-);
 -- Create Battles Table (to log battles)
 CREATE TABLE battles (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -97,16 +110,7 @@ CREATE TABLE battles (
     elo_change_user1 int,
     elo_change_user2 int
 );
--- Create Trading Deals Table (to manage trading)
-CREATE TABLE trading_deals (
-    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id uuid REFERENCES users (id) ON DELETE CASCADE,
-    card_id uuid REFERENCES cards (id) ON DELETE CASCADE,
-    required_card_type varchar(20) CHECK (
-        required_card_type IN ('monster', 'spell')
-    ),
-    min_damage int
-);
+
 -- Trigger function to limit package size to 5 cards
 CREATE OR REPLACE FUNCTION check_package_card_count()
 RETURNS trigger

@@ -24,11 +24,10 @@ public class CardDbAccess {
         UserCardsStmt.setObject(1, stackId);
         try (final var result = UserCardsStmt.executeQuery()) {
           while (result.next()) {
-            final var card = new Card(
+            cardList.add(new Card(
                 (UUID) result.getObject("id"),
                 result.getString("name"),
-                result.getDouble("damage"));
-            cardList.add(card);
+                result.getDouble("damage")));
           }
         }
       }

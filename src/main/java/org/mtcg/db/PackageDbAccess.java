@@ -30,6 +30,9 @@ public class PackageDbAccess {
 
       } catch (final SQLException e) {
         logger.severe("Failed to add package: " + e.getMessage());
+        if ("23505".equals(e.getSQLState())) {
+          throw new SQLException("Conflict: Card with this ID already exists in this Package.", e);
+        }
         handleRollback(connection);
         return false; // Indicate failure
       }

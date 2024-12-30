@@ -49,18 +49,12 @@ public class UserDbAccess {
 
       try (final var resultSet = preparedStatement.executeQuery()) {
         if (resultSet.next()) {
-          final String token = resultSet.getString("token");
-          final String hashedPassword = resultSet.getString("password");
-          final UUID id = (UUID) resultSet.getObject("id");
-          final int elo = resultSet.getInt("elo");
-          final int coins = resultSet.getInt("coins");
-          final int wins = resultSet.getInt("wins");
-          final int losses = resultSet.getInt("losses");
-          final String bio = resultSet.getString("bio");
-          final String image = resultSet.getString("image");
-          final String name = resultSet.getString("name");
           logger.info("User retrieved successfully: " + username);
-          return new User(id, username, name, bio, image, hashedPassword, coins, token, elo, wins, losses);
+          final var user = new User((UUID) resultSet.getObject("id"), username, resultSet.getString("name"),
+              resultSet.getString("bio"), resultSet.getString("image"), resultSet.getString("password"),
+              resultSet.getInt("coins"), resultSet.getString("token"), resultSet.getInt("elo"),
+              resultSet.getInt("wins"), resultSet.getInt("losses"));
+          return user;
         } else {
           logger.warning("User not found: " + username);
         }
@@ -83,18 +77,12 @@ public class UserDbAccess {
 
       try (final var resultSet = preparedStatement.executeQuery()) {
         if (resultSet.next()) {
-          final String username = resultSet.getString("username");
-          final String hashedPassword = resultSet.getString("password");
-          final UUID id = (UUID) resultSet.getObject("id");
-          final int elo = resultSet.getInt("elo");
-          final int coins = resultSet.getInt("coins");
-          final int wins = resultSet.getInt("wins");
-          final int losses = resultSet.getInt("losses");
-          final String bio = resultSet.getString("bio");
-          final String image = resultSet.getString("image");
-          final String name = resultSet.getString("name");
-          logger.info("User retrieved successfully: " + username);
-          return new User(id, username, name, bio, image, hashedPassword, coins, token, elo, wins, losses);
+          final var user = new User((UUID) resultSet.getObject("id"), resultSet.getString("username"),
+              resultSet.getString("name"), resultSet.getString("bio"), resultSet.getString("image"),
+              resultSet.getString("password"), resultSet.getInt("coins"), token, resultSet.getInt("elo"),
+              resultSet.getInt("wins"), resultSet.getInt("losses"));
+          logger.info("User retrieved successfully: " + resultSet.getString("username"));
+          return user;
         }
       }
     } catch (final SQLException e) {
