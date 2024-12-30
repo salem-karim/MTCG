@@ -74,7 +74,7 @@ public class DeckDbAccess {
         connection.setAutoCommit(false); // Start transaction
 
         insertDeckCards(connection, deckId, cardIds); // Add cards to the deck
-        new StackDbAccess().updateStacksDeckId(deckId, userId, cardIds); // Update user's stack
+        new StackDbAccess().updateStacksDeckId(connection, deckId, userId, cardIds); // Update user's stack
 
         connection.commit(); // Commit the transaction if all steps succeed
         return true;

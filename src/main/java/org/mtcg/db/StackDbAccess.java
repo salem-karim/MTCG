@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.UUID;
 import java.util.logging.Logger;
 
+import org.mtcg.models.Trade;
+
 public class StackDbAccess {
   private static final Logger logger = Logger.getLogger(StackDbAccess.class.getName());
 
@@ -38,7 +40,8 @@ public class StackDbAccess {
     return true;
   }
 
-  public void updateStacksDeckId(final UUID deckId, final UUID userId, final UUID[] cardIds) throws SQLException {
+  public void updateStacksDeckId(final Connection connection, final UUID deckId, final UUID userId,
+      final UUID[] cardIds) throws SQLException {
     final String validateCardsSQL = """
             SELECT card_id
             FROM stack_cards sc
@@ -57,9 +60,7 @@ public class StackDbAccess {
               )
         """;
 
-    try (final var connection = DbConnection.getConnection()) {
-      connection.setAutoCommit(false);
-
+    try {
       // Validate that all provided card IDs exist in the user's stack and are not
       // part of any trading deals
       try (final var validateStmt = connection.prepareStatement(validateCardsSQL)) {
@@ -86,8 +87,58 @@ public class StackDbAccess {
       }
 
       connection.commit();
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       logger.severe("Failed to update user's stack: " + e.getMessage());
+      throw e;
+    }
+  }
+
+  public void updateStacksTradeId(final Connection connection, final Trade trade, final UUID userId)
+      throws SQLException {
+    final String validateCardSQL = """
+            SELECT card_id
+            FROM stack_cards sc
+            JOIN stacks s ON sc.stack_id = s.id
+            WHERE s.user_id = ?
+              AND card_id = ?
+              AND sc.deck_id IS NULL
+              AND sc.trade_id IS NULL
+        """;
+
+    final String updateSQL = """
+            UPDATE stack_cards
+            SET trade_id = ?
+            WHERE card_id = ?
+              AND stack_id = (
+                  SELECT id FROM stacks WHERE user_id = ?
+              )
+        """;
+
+    try {
+      // Validate that the provided card exists in the user's stack,
+      // is not part of a deck, and is not part of another trade
+      try (final var validateStmt = connection.prepareStatement(validateCardSQL)) {
+        validateStmt.setObject(1, userId);
+        validateStmt.setObject(2, trade.getCardId());
+        final var resultSet = validateStmt.executeQuery();
+
+        if (!resultSet.next()) {
+          throw new SQLException(
+              "The card is either not in the user's stack, already in a deck, or part of another trade.");
+        }
+      }
+
+      // Update the stack_cards table to associate the card with the trade
+      try (final var updateStmt = connection.prepareStatement(updateSQL)) {
+        updateStmt.setObject(1, trade.getId());
+        updateStmt.setObject(2, trade.getCardId());
+        updateStmt.setObject(3, userId);
+        updateStmt.executeUpdate();
+      }
+
+      connection.commit();
+    } catch (final SQLException e) {
+      logger.severe("Failed to update user's stack with trade: " + e.getMessage());
       throw e;
     }
   }

@@ -64,7 +64,7 @@ public class TradingController extends Controller {
       final Trade trade = partialTrade.withUserId(request.getUser().getId());
 
       // Insert the trading deal into the database
-      tradingDbAccess.insertDeal(trade);
+      tradingDbAccess.createDeal(trade, request.getUser().getId());
 
       return new HttpResponse(HttpStatus.CREATED, ContentType.JSON, "\n");
 
