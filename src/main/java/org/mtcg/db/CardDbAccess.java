@@ -54,4 +54,9 @@ public class CardDbAccess {
       cardStmt.executeBatch(); // Execute all insert statements
     }
   }
+
+  public Card getCardById(UUID cardId) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getCardById'");
+  }
 }

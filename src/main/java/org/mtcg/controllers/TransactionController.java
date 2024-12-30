@@ -31,6 +31,7 @@ public class TransactionController extends Controller {
       }
       user.setCoins(user.getCoins() - 5);
       // Step 3: Attempt to buy package
+      // TODO: move Logic from TransactionDbAccess to here
       if (transactionDbAccess.buyPackage(user)) {
         return new HttpResponse(HttpStatus.CREATED, ContentType.JSON,
             createJsonMessage("message", "Package purchased successfully"));
