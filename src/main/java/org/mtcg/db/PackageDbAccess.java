@@ -45,8 +45,6 @@ public class PackageDbAccess {
 
   public UUID getRandomPackage(final Connection connection) throws SQLException {
     final String randomPkgSQL = "SELECT * FROM packages WHERE transaction_id IS NULL LIMIT 1";
-    // final String randomPkgSQL = "SELECT * FROM packages WHERE transaction_id IS
-    // NULL ORDER BY RANDOM() LIMIT 1";
     try (final var stmt = connection.prepareStatement(randomPkgSQL);
         var result = stmt.executeQuery()) {
       if (result.next()) {

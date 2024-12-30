@@ -1,6 +1,8 @@
 package org.mtcg.models;
 
 import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 
@@ -27,6 +29,7 @@ public class Trade {
   }
 
   // Factory method to create a Trade without userId
+  @JsonCreator
   public static Trade fromJson(@JsonProperty("id") final UUID id,
       @JsonProperty("CardToTrade") final UUID cardId,
       @JsonProperty("Type") final String requiredType,
