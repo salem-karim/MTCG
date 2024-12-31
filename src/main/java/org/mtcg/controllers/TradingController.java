@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.mtcg.db.CardDbAccess;
 import org.mtcg.db.TradingDbAccess;
+import org.mtcg.db.DbConnection;
 import org.mtcg.httpserver.HttpRequest;
 import org.mtcg.httpserver.HttpResponse;
 import org.mtcg.models.Trade;
@@ -113,7 +114,7 @@ public class TradingController extends Controller {
       }
 
       // Perform the deletion
-      tradingDbAccess.deleteDeal(tradeId);
+      tradingDbAccess.deleteDeal(DbConnection.getConnection(), tradeId);
 
       // Return a successful response
       return new HttpResponse(HttpStatus.OK, ContentType.JSON,
@@ -161,7 +162,7 @@ public class TradingController extends Controller {
       }
 
       // Get the card ID from the request body
-      final var cardId = UUID.fromString(request.getBody().replaceAll("\"", ""));
+      final var cardId = getObjectMapper().readValue(request.getBody(), UUID.class);
 
       // Fetch card details from the database
       final var card = cardDbAccess.getCardById(cardId);
@@ -178,7 +179,7 @@ public class TradingController extends Controller {
       }
 
       // Perform the trade
-      if (tradingDbAccess.completeTrade(tradeId, user.getId(), cardId)) {
+      if (tradingDbAccess.completeTrade(trade, user.getId(), cardId)) {
         return new HttpResponse(HttpStatus.CREATED, ContentType.JSON,
             createJsonMessage("success", "Trade completed successfully"));
       } else {
@@ -189,6 +190,10 @@ public class TradingController extends Controller {
     } catch (IllegalArgumentException e) {
       return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
           createJsonMessage("error", "Invalid trade or card ID format"));
+    } catch (JsonProcessingException e) {
+      return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
+          createJsonMessage("error", "Invalid request body. Check the JSON format."));
+
     } catch (SQLException e) {
       return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON,
           createJsonMessage("error", "Internal Server Error at Database Level"));

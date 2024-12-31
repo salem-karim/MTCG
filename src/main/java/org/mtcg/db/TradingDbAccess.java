@@ -12,6 +12,7 @@ import org.mtcg.models.Trade;
 
 public class TradingDbAccess {
   private static final Logger logger = Logger.getLogger(TradingDbAccess.class.getName());
+  private final StackDbAccess stackDbAccess = new StackDbAccess();
 
   public List<Trade> getTradingDeals() {
     final var tradeList = new ArrayList<Trade>();
@@ -85,10 +86,9 @@ public class TradingDbAccess {
     }
   }
 
-  public boolean deleteDeal(final UUID tradeId) {
+  public boolean deleteDeal(final Connection connection, final UUID tradeId) {
     final String deleteDealSQL = "DELETE FROM trading_deals WHERE id = ?";
-    try (final var connection = DbConnection.getConnection();
-        final var stmt = connection.prepareStatement(deleteDealSQL)) {
+    try (final var stmt = connection.prepareStatement(deleteDealSQL)) {
       stmt.setObject(1, tradeId);
       final int rowsAffected = stmt.executeUpdate();
 
@@ -125,8 +125,86 @@ public class TradingDbAccess {
     return null;
   }
 
-  public boolean completeTrade(final UUID tradeId, final UUID id, final UUID cardId) {
-    return false;
+  public boolean completeTrade(final Trade trade, final UUID userId, final UUID cardId) throws SQLException {
+    try (final var connection = DbConnection.getConnection()) {
+      try {
+        connection.setAutoCommit(false); // Begin transaction
+
+        if (!stackDbAccess.validateCard(connection, userId, cardId)) {
+          throw new IllegalArgumentException("Card not found in user's stack.");
+        }
+
+        if (!validateTrade(connection, trade)) {
+          throw new IllegalArgumentException("Invalid trade.");
+        }
+
+        final var tradeStackId = stackDbAccess.getStackId(connection, trade.getUserId());
+        final var reqStackId = stackDbAccess.getStackId(connection, userId);
+
+        // Perform the trade
+        // 1. Remove the card from the request user's stack
+        stackDbAccess.deleteCardFromStack(connection, reqStackId, cardId);
+
+        // 2. Add the trade card to the request user's stack
+        stackDbAccess.insertCardIntoStack(connection, reqStackId, trade.getCardId());
+
+        // 3. Remove the trade card from the trade creator's stack
+
+        stackDbAccess.deleteCardFromStack(connection, tradeStackId, trade.getCardId());
+
+        // 4. Add the request user's card to the trade creator's stack
+        stackDbAccess.insertCardIntoStack(connection, tradeStackId, cardId);
+
+        // 5. Delete the trade
+        deleteDeal(connection, trade.getId());
+
+        // Commit the transaction
+        connection.commit();
+        return true;
+
+      } catch (Exception e) {
+        e.printStackTrace();
+        handleRollback(connection);
+
+        return false;
+      }
+    }
+  }
+
+  private boolean validateTrade(Connection connection, Trade trade) {
+    try {
+      final var validateTradeStmt = connection.prepareStatement(
+          "SELECT COUNT(*) FROM trading_deals td " +
+              "WHERE td.id = ? AND td.card_id = ? AND " +
+              "(td.required_card_type IS NULL OR td.required_card_type = ?) AND " +
+              "(td.min_damage IS NULL OR td.min_damage <= ?)");
+      validateTradeStmt.setObject(1, trade.getId());
+      validateTradeStmt.setObject(2, trade.getCardId());
+      validateTradeStmt.setString(3, trade.getRequiredType());
+      validateTradeStmt.setDouble(4, trade.getMinDamage());
+
+      final var tradeValidResult = validateTradeStmt.executeQuery();
+      tradeValidResult.next();
+
+      if (tradeValidResult.getInt(1) == 0) {
+        return false;
+      }
+      return true;
+    } catch (SQLException e) {
+      logger.severe("Failed to get Trade info: " + e.getMessage());
+      return false;
+    }
+  }
+
+  private void handleRollback(final Connection con) {
+    try {
+      if (!con.getAutoCommit()) {
+        con.rollback();
+        logger.info("Transaction rolled back due to failure.");
+      }
+    } catch (final SQLException rollbackEx) {
+      logger.severe("Rollback failed: " + rollbackEx.getMessage());
+    }
   }
 
 }

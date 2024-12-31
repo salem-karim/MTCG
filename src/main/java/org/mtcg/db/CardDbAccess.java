@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.mtcg.models.Card;
@@ -55,7 +56,26 @@ public class CardDbAccess {
   }
 
   public Card getCardById(UUID cardId) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'getCardById'");
+    try (final var connection = DbConnection.getConnection()) {
+      final String IdSQL = "SELECT * FROM cards WHERE id = ?";
+
+      try (final var IdStmt = connection.prepareStatement(IdSQL)) {
+        IdStmt.setObject(1, cardId);
+        try (final var result = IdStmt.executeQuery()) {
+          if (result.next()) {
+            final var card = new Card(
+                (UUID) result.getObject("id"),
+                result.getString("name"),
+                result.getDouble("damage"));
+            return card;
+          } else {
+            logger.warning("Card with ID: " + cardId + "not found\n");
+          }
+        }
+      }
+    } catch (final SQLException e) {
+      logger.log(Level.SEVERE, "SQL error while retrieving card with ID: " + cardId, e);
+    }
+    return null;
   }
 }

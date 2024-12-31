@@ -26,6 +26,24 @@ public class StackDbAccess {
     }
   }
 
+  public void insertCardIntoStack(final Connection connection, final UUID stackId, final UUID cardId)
+      throws SQLException {
+    final var addUserCardStmt = connection.prepareStatement(
+        "INSERT INTO stack_cards (stack_id, card_id) VALUES (?, ?)");
+    addUserCardStmt.setObject(1, stackId);
+    addUserCardStmt.setObject(2, cardId);
+    addUserCardStmt.executeUpdate();
+  }
+
+  public void deleteCardFromStack(final Connection connection, final UUID stackId, final UUID cardId)
+      throws SQLException {
+    final var removeTradeCardStmt = connection.prepareStatement(
+        "DELETE FROM stack_cards WHERE stack_id = ? AND card_id = ?");
+    removeTradeCardStmt.setObject(1, stackId);
+    removeTradeCardStmt.setObject(2, cardId);
+    removeTradeCardStmt.executeUpdate();
+  }
+
   public boolean insertCardsIntoStack(final Connection connection, final UUID stackId, final UUID[] cardIds)
       throws SQLException {
     final String stackCardsSQL = "INSERT INTO stack_cards (stack_id, card_id) VALUES (?, ?)";
@@ -143,4 +161,25 @@ public class StackDbAccess {
     }
   }
 
+  public boolean validateCard(final Connection connection, final UUID userId, final UUID cardId) {
+    try {
+      // Validate that the card is in the request user's stack
+      final var validateCardStmt = connection.prepareStatement(
+          "SELECT COUNT(*) FROM stack_cards sc " +
+              "JOIN stacks s ON sc.stack_id = s.id " +
+              "WHERE s.user_id = ? AND sc.card_id = ?");
+      validateCardStmt.setObject(1, userId);
+      validateCardStmt.setObject(2, cardId);
+
+      final var cardExistsResult = validateCardStmt.executeQuery();
+      cardExistsResult.next();
+      if (cardExistsResult.getInt(1) == 0) {
+        return false;
+      }
+      return true;
+    } catch (final SQLException e) {
+      logger.severe("Failed to get card from user's stack: " + e.getMessage());
+      return false;
+    }
+  }
 }
