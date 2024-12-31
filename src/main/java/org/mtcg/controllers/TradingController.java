@@ -123,12 +123,8 @@ public class TradingController extends Controller {
       // Handle invalid UUID format
       return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
           createJsonMessage("error", "Invalid trade ID format."));
-    } catch (SQLException e) {
-      // Log and return database-level error
-      System.err.println("SQL Exception: " + e.getMessage());
-      return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON,
-          createJsonMessage("error", "Internal Server Error at Database Level"));
-    } catch (Exception e) {
+    } // Log and return database-level error
+    catch (Exception e) {
       // Catch any other unexpected exceptions
       System.err.println("Unexpected Exception: " + e.getMessage());
       return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON,

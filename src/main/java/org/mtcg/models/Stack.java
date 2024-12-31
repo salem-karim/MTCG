@@ -17,12 +17,4 @@ public class Stack {
     this.userId = userId;
     this.cards = cards;
   }
-
-  public void addCard(final Card card) {
-    cards.put(card.getId(), card);
-  }
-
-  public void removeCard(final Card card) {
-    cards.remove(card.getId());
-  }
 }

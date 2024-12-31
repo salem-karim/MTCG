@@ -63,11 +63,10 @@ public class CardDbAccess {
         IdStmt.setObject(1, cardId);
         try (final var result = IdStmt.executeQuery()) {
           if (result.next()) {
-            final var card = new Card(
+            return new Card(
                 (UUID) result.getObject("id"),
                 result.getString("name"),
                 result.getDouble("damage"));
-            return card;
           } else {
             logger.warning("Card with ID: " + cardId + "not found\n");
           }

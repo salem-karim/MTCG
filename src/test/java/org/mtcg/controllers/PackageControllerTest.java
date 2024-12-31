@@ -87,7 +87,7 @@ class PackageControllerTest {
   }
 
   @Test
-  void testAddPackage_InsufficientCards() throws Exception {
+  void testAddPackage_InsufficientCards() {
     // Prepare test data with fewer than 5 cards
     final UUID userId = UUID.randomUUID();
     when(mockUser.getId()).thenReturn(userId);
@@ -118,7 +118,7 @@ class PackageControllerTest {
   }
 
   @Test
-  void testAddPackage_Unauthorized() throws Exception {
+  void testAddPackage_Unauthorized() {
     // Simulate no user (unauthorized request)
     when(mockRequest.getUser()).thenReturn(null);
 

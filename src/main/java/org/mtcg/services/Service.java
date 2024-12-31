@@ -5,5 +5,5 @@ import org.mtcg.httpserver.HttpResponse;
 
 @FunctionalInterface
 public interface Service {
-  public abstract HttpResponse handle(final HttpRequest request);
+  HttpResponse handle(final HttpRequest request);
 }

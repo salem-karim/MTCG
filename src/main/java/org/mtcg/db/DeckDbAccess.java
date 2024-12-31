@@ -20,8 +20,7 @@ public class DeckDbAccess {
         IdStmt.setObject(1, id);
         try (final var result = IdStmt.executeQuery()) {
           if (result.next()) {
-            final var deckId = (UUID) result.getObject("id");
-            return deckId;
+            return (UUID) result.getObject("id");
           } else {
             logger.warning("Deck of User with ID: " + id + "not found\n");
           }

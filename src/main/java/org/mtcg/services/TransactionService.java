@@ -7,10 +7,8 @@ import org.mtcg.utils.Method;
 
 public class TransactionService extends DefaultService {
 
-  private final TransactionController transactionController;
-
   public TransactionService() {
-    this.transactionController = new TransactionController();
+    TransactionController transactionController = new TransactionController();
 
     methods.put(Method.POST, transactionController::buyPackage);
   }

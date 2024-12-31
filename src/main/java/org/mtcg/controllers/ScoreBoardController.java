@@ -8,7 +8,7 @@ import org.mtcg.httpserver.HttpResponse;
 import org.mtcg.models.UserStats;
 import org.mtcg.utils.ContentType;
 import org.mtcg.utils.HttpStatus;
-import org.mtcg.utils.exceptions.HttpRequestException;
+import org.mtcg.utils.HttpRequestException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 

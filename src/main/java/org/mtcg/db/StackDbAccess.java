@@ -44,8 +44,7 @@ public class StackDbAccess {
     removeTradeCardStmt.executeUpdate();
   }
 
-  public boolean insertCardsIntoStack(final Connection connection, final UUID stackId, final UUID[] cardIds)
-      throws SQLException {
+  public boolean insertCardsIntoStack(final Connection connection, final UUID stackId, final UUID[] cardIds) {
     final String stackCardsSQL = "INSERT INTO stack_cards (stack_id, card_id) VALUES (?, ?)";
     try (final var stmt = connection.prepareStatement(stackCardsSQL)) {
       for (final UUID cardId : cardIds) {
@@ -54,6 +53,9 @@ public class StackDbAccess {
         stmt.addBatch();
       }
       stmt.executeBatch();
+    } catch (SQLException e) {
+      logger.warning("SQLException: " + e.getMessage());
+      return false;
     }
     return true;
   }
@@ -173,10 +175,7 @@ public class StackDbAccess {
 
       final var cardExistsResult = validateCardStmt.executeQuery();
       cardExistsResult.next();
-      if (cardExistsResult.getInt(1) == 0) {
-        return false;
-      }
-      return true;
+      return cardExistsResult.getInt(1) != 0;
     } catch (final SQLException e) {
       logger.severe("Failed to get card from user's stack: " + e.getMessage());
       return false;

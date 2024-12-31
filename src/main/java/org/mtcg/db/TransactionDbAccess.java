@@ -54,7 +54,9 @@ public class TransactionDbAccess {
         }
 
         // Update user coins
-        if (!userDbAccess.updateUserCoins(connection, user)) {
+        try {
+          userDbAccess.updateUserCoins(connection, user);
+        } catch (final SQLException e) {
           throw new SQLException("Failed to update user coins");
         }
 

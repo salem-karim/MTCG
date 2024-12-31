@@ -38,7 +38,7 @@ public class TradingDbAccess {
     return tradeList;
   }
 
-  public boolean createDeal(final Trade trade, final UUID userId) throws SQLException {
+  public void createDeal(final Trade trade, final UUID userId) throws SQLException {
     try (final var connection = DbConnection.getConnection()) {
       try {
         connection.setAutoCommit(false);
@@ -46,7 +46,6 @@ public class TradingDbAccess {
         new StackDbAccess().updateStacksTradeId(connection, trade, userId);
 
         connection.commit();
-        return true;
 
       } catch (final SQLException e) {
         if ("23505".equals(e.getSQLState())) {
@@ -56,7 +55,6 @@ public class TradingDbAccess {
           throw e;
         } else {
           logger.severe("Failed to creat Trading Deal: " + e.getMessage());
-          return false;
         }
       }
 
@@ -86,20 +84,20 @@ public class TradingDbAccess {
     }
   }
 
-  public boolean deleteDeal(final Connection connection, final UUID tradeId) {
+  public void deleteDeal(final Connection connection, final UUID tradeId) {
     final String deleteDealSQL = "DELETE FROM trading_deals WHERE id = ?";
     try (final var stmt = connection.prepareStatement(deleteDealSQL)) {
       stmt.setObject(1, tradeId);
       final int rowsAffected = stmt.executeUpdate();
 
-      return rowsAffected > 0;
+      if (rowsAffected > 0)
+        throw new SQLException("Failed to delete Trading Deal: " + tradeId);
     } catch (final SQLException e) {
       logger.severe("Failed to delete trading deal with ID " + tradeId + ": " + e.getMessage());
-      return false;
     }
   }
 
-  public Trade getTradeFromId(final UUID tradeId) throws SQLException {
+  public Trade getTradeFromId(final UUID tradeId) {
     try (final var connection = DbConnection.getConnection()) {
       final String sql = "SELECT * FROM trading_deals WHERE id = ?";
       final var preparedStatement = connection.prepareStatement(sql);
@@ -108,13 +106,12 @@ public class TradingDbAccess {
       try (final var result = preparedStatement.executeQuery()) {
         if (result.next()) {
           logger.info("Trade Deal retrieved successfully: " + tradeId);
-          final var trade = new Trade(
+          return new Trade(
               (UUID) result.getObject("id"),
               (UUID) result.getObject("card_id"),
               result.getString("required_card_type"),
               result.getDouble("min_damage"),
               (UUID) result.getObject("user_id"));
-          return trade;
         } else {
           logger.warning("Trade with ID: " + tradeId + " not found.");
         }
@@ -163,7 +160,7 @@ public class TradingDbAccess {
         return true;
 
       } catch (Exception e) {
-        e.printStackTrace();
+        logger.severe("Failed to complete Trade: " + e.getMessage());
         handleRollback(connection);
 
         return false;
@@ -186,10 +183,7 @@ public class TradingDbAccess {
       final var tradeValidResult = validateTradeStmt.executeQuery();
       tradeValidResult.next();
 
-      if (tradeValidResult.getInt(1) == 0) {
-        return false;
-      }
-      return true;
+      return tradeValidResult.getInt(1) != 0;
     } catch (SQLException e) {
       logger.severe("Failed to get Trade info: " + e.getMessage());
       return false;

@@ -5,7 +5,7 @@ import lombok.Getter;
 import org.mtcg.db.UserDbAccess;
 import org.mtcg.models.User;
 import org.mtcg.utils.Method;
-import org.mtcg.utils.exceptions.HttpRequestException;
+import org.mtcg.utils.HttpRequestException;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -6,10 +6,13 @@ import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import lombok.extern.slf4j.Slf4j;
 import org.mtcg.models.User;
 import org.mtcg.models.UserData;
 import org.mtcg.models.UserStats;
 
+@Slf4j
 public class UserDbAccess {
   private static final Logger logger = Logger.getLogger(UserDbAccess.class.getName());
 
@@ -50,11 +53,10 @@ public class UserDbAccess {
       try (final var resultSet = preparedStatement.executeQuery()) {
         if (resultSet.next()) {
           logger.info("User retrieved successfully: " + username);
-          final var user = new User((UUID) resultSet.getObject("id"), username, resultSet.getString("name"),
+          return new User((UUID) resultSet.getObject("id"), username, resultSet.getString("name"),
               resultSet.getString("bio"), resultSet.getString("image"), resultSet.getString("password"),
               resultSet.getInt("coins"), resultSet.getString("token"), resultSet.getInt("elo"),
               resultSet.getInt("wins"), resultSet.getInt("losses"));
-          return user;
         } else {
           logger.warning("User not found: " + username);
         }
@@ -91,7 +93,7 @@ public class UserDbAccess {
     return null;
   }
 
-  public boolean updateUserCoins(final Connection connection, final User user) throws SQLException {
+  public void updateUserCoins(final Connection connection, final User user) throws SQLException {
     final String updateUserCoinsSQL = "UPDATE users SET coins = ? WHERE id = ?";
     try (final var updateCoinsStmt = connection.prepareStatement(updateUserCoinsSQL)) {
       updateCoinsStmt.setInt(1, user.getCoins());
@@ -101,7 +103,6 @@ public class UserDbAccess {
       if (affectedRows == 0) {
         throw new SQLException("Failed to update user coins. No user found with the given ID.");
       }
-      return true;
     }
   }
 
@@ -143,7 +144,7 @@ public class UserDbAccess {
       }
       return allUserstats;
     } catch (final SQLException e) {
-      System.out.println(e);
+      log.error("e: ", e);
       logger.warning("Failed to get all Users Stats");
       return null;
     }

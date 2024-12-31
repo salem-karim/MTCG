@@ -6,7 +6,7 @@ import org.mtcg.httpserver.HttpResponse;
 import org.mtcg.models.User;
 import org.mtcg.utils.ContentType;
 import org.mtcg.utils.HttpStatus;
-import org.mtcg.utils.exceptions.HttpRequestException;
+import org.mtcg.utils.HttpRequestException;
 
 import java.util.UUID;
 

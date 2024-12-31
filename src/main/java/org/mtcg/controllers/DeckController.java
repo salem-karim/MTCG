@@ -3,16 +3,18 @@ package org.mtcg.controllers;
 import java.sql.SQLException;
 import java.util.UUID;
 
+import lombok.extern.slf4j.Slf4j;
 import org.mtcg.db.DeckDbAccess;
 import org.mtcg.httpserver.HttpRequest;
 import org.mtcg.httpserver.HttpResponse;
 import org.mtcg.models.Deck;
 import org.mtcg.utils.ContentType;
 import org.mtcg.utils.HttpStatus;
-import org.mtcg.utils.exceptions.HttpRequestException;
+import org.mtcg.utils.HttpRequestException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+@Slf4j
 public class DeckController extends Controller {
   private final DeckDbAccess deckDbAccess;
 
@@ -33,11 +35,11 @@ public class DeckController extends Controller {
         return new HttpResponse(HttpStatus.NO_CONTENT, ContentType.JSON, "[ ]");
       } else if (deck.getCards().length == 4) {
         if (request.getPath().contains("format=plain")) {
-          String cardString = "";
+          StringBuilder cardString = new StringBuilder();
           for (final var card : deck.getCards()) {
-            cardString += card.toString();
+            cardString.append(card.toString());
           }
-          return new HttpResponse(HttpStatus.OK, ContentType.PLAIN_TEXT, cardString);
+          return new HttpResponse(HttpStatus.OK, ContentType.PLAIN_TEXT, cardString.toString());
         } else {
           try {
             // Serialize the cards array to JSON
@@ -89,7 +91,7 @@ public class DeckController extends Controller {
           createJsonMessage("error", "Access token is missing or invalid"));
 
     } catch (final SQLException e) {
-      System.out.println(e);
+      log.error("e: ", e);
       if (e.getMessage().contains("Conflict")) {
         // Conflict Error in DB
         return new HttpResponse(HttpStatus.CONFLICT, ContentType.JSON,
