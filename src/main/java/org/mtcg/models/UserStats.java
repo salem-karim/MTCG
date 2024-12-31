@@ -3,6 +3,9 @@ package org.mtcg.models;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import lombok.Getter;
+
+@Getter
 public class UserStats {
   @JsonProperty("Username")
   private String username = "";

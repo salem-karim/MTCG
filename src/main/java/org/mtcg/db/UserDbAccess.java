@@ -7,12 +7,10 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import lombok.extern.slf4j.Slf4j;
 import org.mtcg.models.User;
 import org.mtcg.models.UserData;
 import org.mtcg.models.UserStats;
 
-@Slf4j
 public class UserDbAccess {
   private static final Logger logger = Logger.getLogger(UserDbAccess.class.getName());
 
@@ -128,6 +126,21 @@ public class UserDbAccess {
     return false;
   }
 
+  public void updateUserStats(final Connection connection, final UserStats userStats) throws SQLException {
+    final String sql = "UPDATE users SET elo = ?, wins = ? , losses = ? WHERE username = ?";
+    try (final var Stmt = connection.prepareStatement(sql)) {
+      Stmt.setInt(1, userStats.getElo());
+      Stmt.setInt(2, userStats.getWins());
+      Stmt.setInt(3, userStats.getLosses());
+      Stmt.setString(4, userStats.getUsername());
+
+      final int affectedRows = Stmt.executeUpdate();
+      if (affectedRows == 0) {
+        throw new SQLException("Failed to update user coins. No user found with the given ID.");
+      }
+    }
+  }
+
   public List<UserStats> getAllUserStats() {
     final var allUserstats = new ArrayList<UserStats>();
     try (final var connection = DbConnection.getConnection()) {
@@ -144,8 +157,7 @@ public class UserDbAccess {
       }
       return allUserstats;
     } catch (final SQLException e) {
-      log.error("e: ", e);
-      logger.warning("Failed to get all Users Stats");
+      logger.warning("Failed to get all Users Stats: " + e.getMessage());
       return null;
     }
   }

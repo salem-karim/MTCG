@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.UUID;
 import java.util.logging.Logger;
 
+import org.mtcg.models.Card;
 import org.mtcg.models.Trade;
 
 public class StackDbAccess {
@@ -179,6 +180,20 @@ public class StackDbAccess {
     } catch (final SQLException e) {
       logger.severe("Failed to get card from user's stack: " + e.getMessage());
       return false;
+    }
+  }
+
+  public void deleteCardsFromStack(Connection connection, UUID looserStackId, Card[] cards) throws SQLException {
+    final String sql = "DELETE FROM stack_cards WHERE card_id = ?";
+    try (final var stmt = connection.prepareStatement(sql)) {
+      for (final var card : cards) {
+        stmt.setObject(1, card.getId());
+        stmt.addBatch();
+      }
+      stmt.executeBatch();
+
+    } catch (SQLException e) {
+      throw e;
     }
   }
 }

@@ -77,7 +77,7 @@ public class DeckDbAccess {
 
         connection.commit(); // Commit the transaction if all steps succeed
         return true;
-      } catch (SQLException e) {
+      } catch (final SQLException e) {
         handleRollback(connection); // Rollback transaction on failure
 
         // Re-throw specific exceptions or handle them accordingly
@@ -124,6 +124,34 @@ public class DeckDbAccess {
       }
     } catch (final SQLException rollbackEx) {
       logger.severe("Rollback failed: " + rollbackEx.getMessage());
+    }
+  }
+
+  public void deleteDeck(final Connection connection, final UUID deckId) throws SQLException {
+    try {
+      deleteDeckCards(connection, deckId);
+      final String sql = "DELETE FROM decks WHERE deck_id = ?";
+      try (final var stmt = connection.prepareStatement(sql)) {
+        stmt.setObject(1, deckId);
+        final int stackAffectedRows = stmt.executeUpdate();
+        if (stackAffectedRows == 0) {
+          throw new SQLException("Failed to delete user stack ");
+        }
+      }
+
+    } catch (final SQLException e) {
+      throw e;
+    }
+  }
+
+  private void deleteDeckCards(final Connection connection, final UUID deckId) throws SQLException {
+    final String sql = "DELETE FROM deck_cards WHERE deck_id = ?";
+    try (final var stmt = connection.prepareStatement(sql)) {
+      stmt.setObject(1, deckId);
+      final int stackAffectedRows = stmt.executeUpdate();
+      if (stackAffectedRows == 0) {
+        throw new SQLException("Failed to delete user stack ");
+      }
     }
   }
 }

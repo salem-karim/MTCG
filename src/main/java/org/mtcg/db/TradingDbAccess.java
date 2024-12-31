@@ -159,7 +159,7 @@ public class TradingDbAccess {
         connection.commit();
         return true;
 
-      } catch (Exception e) {
+      } catch (SQLException e) {
         logger.severe("Failed to complete Trade: " + e.getMessage());
         handleRollback(connection);
 

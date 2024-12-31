@@ -22,7 +22,7 @@ public class BattleLobby {
     return instance;
   }
 
-  public synchronized Future<String> addUserToLobby(User user) throws InterruptedException {
+  public synchronized Future<String> addUserToLobby(User user) throws Exception {
     if (currentPair.isFull()) {
       Pair<User, User> battlePair = currentPair;
       currentPair = new Pair<>(null, null); // Reset for new users

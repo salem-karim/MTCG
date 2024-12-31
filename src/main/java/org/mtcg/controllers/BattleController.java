@@ -1,5 +1,6 @@
 package org.mtcg.controllers;
 
+import java.sql.SQLException;
 import java.util.concurrent.ExecutionException;
 
 import org.mtcg.httpserver.HttpRequest;
@@ -25,10 +26,6 @@ public class BattleController extends Controller {
     try {
       final String battleLog = battleLobby.addUserToLobby(user).get();
       return new HttpResponse(HttpStatus.OK, ContentType.JSON, createJsonMessage("message", battleLog));
-    } catch (InterruptedException e) {
-      System.out.println(e.getMessage());
-      return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON,
-          createJsonMessage("error", "failed to execute the battle"));
     } catch (ExecutionException e) {
       System.out.println(e.getMessage());
       return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
@@ -36,6 +33,14 @@ public class BattleController extends Controller {
     } catch (final NullPointerException e) {
       return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
           createJsonMessage("error", e.getMessage()));
+    } catch (SQLException e) {
+      System.out.println(e.getMessage());
+      return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON,
+          createJsonMessage("error", "Failed in updated values in the database"));
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON,
+          createJsonMessage("error", "failed to execute the battle"));
     }
 
   }
