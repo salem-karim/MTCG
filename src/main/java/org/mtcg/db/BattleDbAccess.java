@@ -23,7 +23,7 @@ public class BattleDbAccess {
   }
 
   public void updateStacksAndDecks(final User winner, final UUID winnerStackId,
-                                   final User looser, final UUID looserStackId,
+      final User looser, final UUID looserStackId,
       final Deck looserDeck)
       throws SQLException {
     try (final var connection = DbConnection.getConnection()) {
@@ -31,8 +31,7 @@ public class BattleDbAccess {
         connection.setAutoCommit(false);
 
         // Remove loosers deck from his stack and Deck
-        stackDbAccess.deleteCardsFromStack(connection, looserStackId, looserDeck.getCards());
-        deckDbAccess.deleteDeck(connection, looserDeck.getId());
+        deckDbAccess.deleteDeckCards(connection, looserDeck.getId());
 
         int index = 0;
         final var loosersDecksCardIds = new UUID[4];
@@ -42,7 +41,7 @@ public class BattleDbAccess {
         }
 
         // Insert the loosers Deck Cards into the winner Stack
-        stackDbAccess.insertCardsIntoStack(connection, winnerStackId, loosersDecksCardIds);
+        stackDbAccess.moveCardsToOtherStack(connection, winnerStackId, looserStackId, loosersDecksCardIds);
 
         // Update the users stats
         userDbAccess.updateUserStats(connection,

@@ -1,6 +1,5 @@
 package org.mtcg.controllers;
 
-import java.sql.SQLException;
 import java.util.concurrent.ExecutionException;
 
 import org.mtcg.httpserver.HttpRequest;

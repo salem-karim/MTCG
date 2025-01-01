@@ -90,8 +90,8 @@ public class TradingDbAccess {
       stmt.setObject(1, tradeId);
       final int rowsAffected = stmt.executeUpdate();
 
-      if (rowsAffected > 0)
-        throw new SQLException("Failed to delete Trading Deal: " + tradeId);
+      if (rowsAffected == 0)
+        throw new SQLException();
     } catch (final SQLException e) {
       logger.severe("Failed to delete trading deal with ID " + tradeId + ": " + e.getMessage());
     }
@@ -138,24 +138,20 @@ public class TradingDbAccess {
         final var tradeStackId = stackDbAccess.getStackId(connection, trade.getUserId());
         final var reqStackId = stackDbAccess.getStackId(connection, userId);
 
+        if (tradeStackId == null || reqStackId == null) {
+          logger.severe("Failed to complete Trade: One of the users Stacks does not exist");
+          return false;
+        }
+
         // Perform the trade
-        // 1. Remove the card from the request user's stack
-        stackDbAccess.deleteCardFromStack(connection, reqStackId, cardId);
+        // 1. Update the stackId of the card in the stack_cards table from the
+        // tradeStackId to the reqStackId
+        stackDbAccess.moveCardToOtherStack(connection, tradeStackId, reqStackId, cardId);
 
-        // 2. Add the trade card to the request user's stack
-        stackDbAccess.insertCardIntoStack(connection, reqStackId, trade.getCardId());
-
-        // 3. Remove the trade card from the trade creator's stack
-
-        stackDbAccess.deleteCardFromStack(connection, tradeStackId, trade.getCardId());
-
-        // 4. Add the request user's card to the trade creator's stack
-        stackDbAccess.insertCardIntoStack(connection, tradeStackId, cardId);
-
-        // 5. Delete the trade
+        // 2. Delete the trade
         deleteDeal(connection, trade.getId());
 
-        // Commit the transaction
+        // 3. Commit the transaction
         connection.commit();
         return true;
 
@@ -170,11 +166,11 @@ public class TradingDbAccess {
 
   private boolean validateTrade(Connection connection, Trade trade) {
     try {
-      final var validateTradeStmt = connection.prepareStatement(
-          "SELECT COUNT(*) FROM trading_deals td " +
-              "WHERE td.id = ? AND td.card_id = ? AND " +
-              "(td.required_card_type IS NULL OR td.required_card_type = ?) AND " +
-              "(td.min_damage IS NULL OR td.min_damage <= ?)");
+      final var validateTradeStmt = connection.prepareStatement("""
+          SELECT COUNT(*) FROM trading_deals td
+          WHERE td.id = ? AND td.card_id = ? AND
+          (td.required_card_type IS NULL OR td.required_card_type = ?) AND
+          (td.min_damage IS NULL OR td.min_damage <= ?)""");
       validateTradeStmt.setObject(1, trade.getId());
       validateTradeStmt.setObject(2, trade.getCardId());
       validateTradeStmt.setString(3, trade.getRequiredType());

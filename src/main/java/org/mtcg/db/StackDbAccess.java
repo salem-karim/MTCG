@@ -6,15 +6,14 @@ import java.util.HashSet;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-import org.mtcg.models.Card;
 import org.mtcg.models.Trade;
 
 public class StackDbAccess {
   private static final Logger logger = Logger.getLogger(StackDbAccess.class.getName());
 
   public UUID getStackId(final Connection connection, final UUID id) throws SQLException {
-    final String getStackIdSQL = "SELECT id FROM stacks WHERE user_id = ?";
-    try (final var stmt = connection.prepareStatement(getStackIdSQL)) {
+    final String sql = "SELECT id FROM stacks WHERE user_id = ?";
+    try (final var stmt = connection.prepareStatement(sql)) {
       stmt.setObject(1, id);
       try (final var result = stmt.executeQuery()) {
         if (result.next()) {
@@ -27,34 +26,27 @@ public class StackDbAccess {
     }
   }
 
-  public void insertCardIntoStack(final Connection connection, final UUID stackId, final UUID cardId)
+  public void moveCardToOtherStack(final Connection connection, final UUID stackId, final UUID otherStackId,
+      final UUID cardId)
       throws SQLException {
-    final var addUserCardStmt = connection.prepareStatement(
-        "INSERT INTO stack_cards (stack_id, card_id) VALUES (?, ?)");
-    addUserCardStmt.setObject(1, stackId);
-    addUserCardStmt.setObject(2, cardId);
-    addUserCardStmt.executeUpdate();
-  }
-
-  public void deleteCardFromStack(final Connection connection, final UUID stackId, final UUID cardId)
-      throws SQLException {
-    final var removeTradeCardStmt = connection.prepareStatement(
-        "DELETE FROM stack_cards WHERE stack_id = ? AND card_id = ?");
-    removeTradeCardStmt.setObject(1, stackId);
-    removeTradeCardStmt.setObject(2, cardId);
-    removeTradeCardStmt.executeUpdate();
+    final var stmt = connection.prepareStatement(
+        "UPDATE stack_cards SET stack_id = ? WHERE stack_id = ? AND card_id = ?");
+    stmt.setObject(1, otherStackId);
+    stmt.setObject(2, stackId);
+    stmt.setObject(3, cardId);
+    stmt.executeUpdate();
   }
 
   public boolean insertCardsIntoStack(final Connection connection, final UUID stackId, final UUID[] cardIds) {
-    final String stackCardsSQL = "INSERT INTO stack_cards (stack_id, card_id) VALUES (?, ?)";
-    try (final var stmt = connection.prepareStatement(stackCardsSQL)) {
+    final String sql = "INSERT INTO stack_cards (stack_id, card_id) VALUES (?, ?)";
+    try (final var stmt = connection.prepareStatement(sql)) {
       for (final UUID cardId : cardIds) {
         stmt.setObject(1, stackId);
         stmt.setObject(2, cardId);
         stmt.addBatch();
       }
       stmt.executeBatch();
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       logger.warning("SQLException: " + e.getMessage());
       return false;
     }
@@ -167,31 +159,37 @@ public class StackDbAccess {
   public boolean validateCard(final Connection connection, final UUID userId, final UUID cardId) {
     try {
       // Validate that the card is in the request user's stack
-      final var validateCardStmt = connection.prepareStatement(
-          "SELECT COUNT(*) FROM stack_cards sc " +
-              "JOIN stacks s ON sc.stack_id = s.id " +
-              "WHERE s.user_id = ? AND sc.card_id = ?");
-      validateCardStmt.setObject(1, userId);
-      validateCardStmt.setObject(2, cardId);
+      final var stmt = connection.prepareStatement("""
+          SELECT COUNT(*) FROM stack_cards sc
+          JOIN stacks s ON sc.stack_id = s.id
+          WHERE s.user_id = ? AND sc.card_id = ?
+          """);
+      stmt.setObject(1, userId);
+      stmt.setObject(2, cardId);
 
-      final var cardExistsResult = validateCardStmt.executeQuery();
-      cardExistsResult.next();
-      return cardExistsResult.getInt(1) != 0;
+      final var result = stmt.executeQuery();
+      result.next();
+      return result.getInt(1) != 0;
     } catch (final SQLException e) {
       logger.severe("Failed to get card from user's stack: " + e.getMessage());
       return false;
     }
   }
 
-  public void deleteCardsFromStack(Connection connection, UUID looserStackId, Card[] cards) throws SQLException {
-    final String sql = "DELETE FROM stack_cards WHERE card_id = ? AND stack_id = ?";
+  public void moveCardsToOtherStack(final Connection connection, final UUID winnerStackId, final UUID looserStackId,
+      final UUID[] loosersDecksCardIds) throws SQLException {
+    final String sql = """
+            UPDATE stack_cards
+            SET stack_id = ?, deck_id = NULL
+            WHERE stack_id = ? AND card_id = ANY(?)
+        """;
+
     try (final var stmt = connection.prepareStatement(sql)) {
-      for (final var card : cards) {
-        stmt.setObject(1, card.getId());
-        stmt.setObject(2, looserStackId);
-        stmt.addBatch();
-      }
-      stmt.executeBatch();
+      stmt.setObject(1, winnerStackId);
+      stmt.setObject(2, looserStackId);
+      stmt.setArray(3, connection.createArrayOf("UUID", loosersDecksCardIds));
+
+      stmt.executeUpdate();
     }
   }
 }
