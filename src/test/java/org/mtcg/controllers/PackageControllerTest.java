@@ -26,9 +26,6 @@ class PackageControllerTest {
   private PackageDbAccess mockPackageDbAccess;
 
   @Mock
-  private HttpRequest mockRequest;
-
-  @Mock
   private User mockUser;
 
   private ObjectMapper objectMapper;
@@ -47,6 +44,7 @@ class PackageControllerTest {
     // Prepare test data
     final UUID userId = UUID.randomUUID();
     when(mockUser.getId()).thenReturn(userId);
+    when(mockUser.getUsername()).thenReturn("admin");
 
     // Prepare JSON representation of cards
     final String cardsJson = """
@@ -62,7 +60,8 @@ class PackageControllerTest {
         UUID.randomUUID(), UUID.randomUUID(),
         UUID.randomUUID());
 
-    // Setup mocks
+    // Mock request setup
+    HttpRequest mockRequest = mock(HttpRequest.class);
     when(mockRequest.getUser()).thenReturn(mockUser);
     when(mockRequest.getBody()).thenReturn(cardsJson);
 
@@ -91,6 +90,7 @@ class PackageControllerTest {
     // Prepare test data with fewer than 5 cards
     final UUID userId = UUID.randomUUID();
     when(mockUser.getId()).thenReturn(userId);
+    when(mockUser.getUsername()).thenReturn("admin");
 
     // Prepare JSON representation of cards
     final String cardsJson = """
@@ -103,11 +103,12 @@ class PackageControllerTest {
         UUID.randomUUID(), UUID.randomUUID(),
         UUID.randomUUID());
 
-    // Setup mocks
+    // Mock request setup
+    HttpRequest mockRequest = mock(HttpRequest.class);
     when(mockRequest.getUser()).thenReturn(mockUser);
     when(mockRequest.getBody()).thenReturn(cardsJson);
 
-    // Call method under test and expect an exception
+    // Call method under test
     final HttpResponse response = packageController.addPackage(mockRequest);
     final String shouldEqual = packageController.createJsonMessage("error", "Not 5 cards in Request Body");
 
@@ -119,13 +120,14 @@ class PackageControllerTest {
 
   @Test
   void testAddPackage_Unauthorized() throws Exception {
-    // Simulate no user (unauthorized request)
+    // Mock request setup with no user
+    HttpRequest mockRequest = mock(HttpRequest.class);
     when(mockRequest.getUser()).thenReturn(null);
 
     // Call method under test
     final HttpResponse response = packageController.addPackage(mockRequest);
     final String shouldEqual = packageController.createJsonMessage("error",
-        "Authorization header is missing or invalid");
+        "Access token is missing or invalid");
 
     // Assertions
     assertEquals(HttpStatus.UNAUTHORIZED.code, response.getStatusCode());
@@ -138,6 +140,7 @@ class PackageControllerTest {
     // Prepare test data
     final UUID userId = UUID.randomUUID();
     when(mockUser.getId()).thenReturn(userId);
+    when(mockUser.getUsername()).thenReturn("admin");
 
     // Prepare JSON representation of cards
     final String cardsJson = """
@@ -153,7 +156,8 @@ class PackageControllerTest {
         UUID.randomUUID(), UUID.randomUUID(),
         UUID.randomUUID());
 
-    // Setup mocks
+    // Mock request setup
+    HttpRequest mockRequest = mock(HttpRequest.class);
     when(mockRequest.getUser()).thenReturn(mockUser);
     when(mockRequest.getBody()).thenReturn(cardsJson);
 
