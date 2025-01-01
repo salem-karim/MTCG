@@ -2,6 +2,8 @@ package org.mtcg.db;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -61,7 +63,7 @@ public class DeckDbAccess {
       return null;
     }
     try {
-      return new Deck(cards, deckId);
+      return new Deck(new ArrayList<Card>(Arrays.asList(cards)), deckId);
     } catch (final IllegalArgumentException e) {
       throw new IllegalArgumentException(e.getMessage());
     }

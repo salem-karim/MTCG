@@ -44,8 +44,10 @@ public class BattleExecutor implements Callable<String> {
   }
 
   private String performBattle(final Deck deck1, final Deck deck2) throws Exception {
+    final var battleDeck1 = new Deck(deck1);
+    final var battleDeck2 = new Deck(deck2);
     while (result == BattleResult.PLAYING) {
-      battleLog += playRound(deck1, deck2);
+      battleLog += playRound(battleDeck1, battleDeck2);
     }
     switch (result) {
       case BattleResult.USER1_WIN:
@@ -69,6 +71,7 @@ public class BattleExecutor implements Callable<String> {
   }
 
   private String playRound(final Deck deck1, final Deck deck2) {
+    // TODO: Implement the correct Logic
     String toReturn = "";
     for (int i = 0; i < 5; i++) {
       if (i == 4) {

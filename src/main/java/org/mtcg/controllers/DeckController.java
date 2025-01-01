@@ -31,7 +31,7 @@ public class DeckController extends Controller {
       final Deck deck = deckDbAccess.getDeckCards(deckId);
       if (deck == null) {
         return new HttpResponse(HttpStatus.NO_CONTENT, ContentType.JSON, "[ ]");
-      } else if (deck.getCards().length == 4) {
+      } else if (deck.getCards().size() == 4) {
         if (request.getPath().contains("format=plain")) {
           StringBuilder cardString = new StringBuilder();
           for (final var card : deck.getCards()) {
