@@ -1,5 +1,6 @@
 package org.mtcg.models;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -52,6 +53,19 @@ public class Card {
     return "ID: " + id + " Name: " + name +
         "\nDamage: " + damage + " Element/Type: " +
         element + '/' + cardType + '\n';
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Card card = (Card) o;
+    return Objects.equals(id, card.id);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id);
   }
 
 }

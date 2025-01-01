@@ -1,6 +1,8 @@
-package org.mtcg.utils;
+package org.mtcg.utils.battle;
 
 import org.mtcg.models.User;
+import org.mtcg.utils.Pair;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,8 +11,8 @@ import java.util.concurrent.*;
 public class BattleLobby {
   private static BattleLobby instance;
   private final ExecutorService battleExecutorService = Executors.newFixedThreadPool(10);
-  private final List<Pair<User, User>> userPairs = new ArrayList<>();
-  private Pair<User, User> currentPair = new Pair<>(null, null);
+  private final List<Pair<User>> userPairs = new ArrayList<>();
+  private Pair<User> currentPair = new Pair<>(null, null);
 
   private BattleLobby() {
   }
@@ -21,8 +23,6 @@ public class BattleLobby {
     }
     return instance;
   }
-
-
 
   public synchronized Future<String> addUserToLobby(User user) {
     if (currentPair.isFull()) {
@@ -37,7 +37,7 @@ public class BattleLobby {
     }
 
     if (currentPair.isFull()) {
-      Pair<User, User> battlePair = currentPair;
+      Pair<User> battlePair = currentPair;
       currentPair = new Pair<>(null, null); // Reset for new users
       userPairs.remove(battlePair);
 
@@ -48,7 +48,6 @@ public class BattleLobby {
 
     return CompletableFuture.completedFuture("Waiting for an opponent...");
   }
-
 
   public void shutdown() {
     battleExecutorService.shutdown();

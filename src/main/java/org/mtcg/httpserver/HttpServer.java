@@ -1,6 +1,6 @@
 package org.mtcg.httpserver;
 
-import org.mtcg.utils.BattleLobby;
+import org.mtcg.utils.battle.BattleLobby;
 import org.mtcg.utils.Router;
 
 import java.io.IOException;

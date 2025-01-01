@@ -4,7 +4,7 @@ import java.util.concurrent.ExecutionException;
 
 import org.mtcg.httpserver.HttpRequest;
 import org.mtcg.httpserver.HttpResponse;
-import org.mtcg.utils.BattleLobby;
+import org.mtcg.utils.battle.BattleLobby;
 import org.mtcg.utils.ContentType;
 import org.mtcg.utils.HttpStatus;
 

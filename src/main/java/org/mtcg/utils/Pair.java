@@ -1,10 +1,10 @@
 package org.mtcg.utils;
 
-public class Pair<F, S> {
-  public F first;
-  public S second;
+public class Pair<T> {
+  public T first;
+  public T second;
 
-  public Pair(F first, S second) {
+  public Pair(T first, T second) {
     this.first = first;
     this.second = second;
   }
