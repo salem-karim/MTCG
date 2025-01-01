@@ -22,7 +22,20 @@ public class BattleLobby {
     return instance;
   }
 
-  public synchronized Future<String> addUserToLobby(User user) throws Exception {
+
+
+  public synchronized Future<String> addUserToLobby(User user) {
+    if (currentPair.isFull()) {
+      throw new IllegalStateException("Unexpected state: currentPair is full but not reset.");
+    }
+
+    if (currentPair.first == null) {
+      currentPair.first = user;
+    } else if (currentPair.second == null) {
+      currentPair.second = user;
+      userPairs.add(currentPair);
+    }
+
     if (currentPair.isFull()) {
       Pair<User, User> battlePair = currentPair;
       currentPair = new Pair<>(null, null); // Reset for new users
@@ -30,19 +43,12 @@ public class BattleLobby {
 
       // Submit the battle to the executor service
       BattleExecutor battleExecutor = new BattleExecutor(battlePair.first, battlePair.second);
-      return battleExecutorService.submit(battleExecutor); // Returns a Future
-    }
-
-    // Add user to the current pair
-    if (currentPair.first == null) {
-      currentPair.first = user;
-    } else if (currentPair.second == null) {
-      currentPair.second = user;
-      userPairs.add(currentPair); // Add pair to the list
+      return battleExecutorService.submit(battleExecutor);
     }
 
     return CompletableFuture.completedFuture("Waiting for an opponent...");
   }
+
 
   public void shutdown() {
     battleExecutorService.shutdown();

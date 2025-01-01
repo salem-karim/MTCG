@@ -130,7 +130,7 @@ public class DeckDbAccess {
   public void deleteDeck(final Connection connection, final UUID deckId) throws SQLException {
     try {
       deleteDeckCards(connection, deckId);
-      final String sql = "DELETE FROM decks WHERE deck_id = ?";
+      final String sql = "DELETE FROM decks WHERE id = ?";
       try (final var stmt = connection.prepareStatement(sql)) {
         stmt.setObject(1, deckId);
         final int stackAffectedRows = stmt.executeUpdate();

@@ -33,10 +33,6 @@ public class BattleController extends Controller {
     } catch (final NullPointerException e) {
       return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
           createJsonMessage("error", e.getMessage()));
-    } catch (SQLException e) {
-      System.out.println(e.getMessage());
-      return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON,
-          createJsonMessage("error", "Failed in updated values in the database"));
     } catch (Exception e) {
       System.out.println(e.getMessage());
       return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON,

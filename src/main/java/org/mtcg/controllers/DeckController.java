@@ -3,7 +3,6 @@ package org.mtcg.controllers;
 import java.sql.SQLException;
 import java.util.UUID;
 
-import lombok.extern.slf4j.Slf4j;
 import org.mtcg.db.DeckDbAccess;
 import org.mtcg.httpserver.HttpRequest;
 import org.mtcg.httpserver.HttpResponse;
@@ -14,7 +13,6 @@ import org.mtcg.utils.HttpRequestException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-@Slf4j
 public class DeckController extends Controller {
   private final DeckDbAccess deckDbAccess;
 
@@ -91,7 +89,7 @@ public class DeckController extends Controller {
           createJsonMessage("error", "Access token is missing or invalid"));
 
     } catch (final SQLException e) {
-      log.error("e: ", e);
+      System.out.println(e.getMessage());
       if (e.getMessage().contains("Conflict")) {
         // Conflict Error in DB
         return new HttpResponse(HttpStatus.CONFLICT, ContentType.JSON,

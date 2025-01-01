@@ -184,16 +184,14 @@ public class StackDbAccess {
   }
 
   public void deleteCardsFromStack(Connection connection, UUID looserStackId, Card[] cards) throws SQLException {
-    final String sql = "DELETE FROM stack_cards WHERE card_id = ?";
+    final String sql = "DELETE FROM stack_cards WHERE card_id = ? AND stack_id = ?";
     try (final var stmt = connection.prepareStatement(sql)) {
       for (final var card : cards) {
         stmt.setObject(1, card.getId());
+        stmt.setObject(2, looserStackId);
         stmt.addBatch();
       }
       stmt.executeBatch();
-
-    } catch (SQLException e) {
-      throw e;
     }
   }
 }

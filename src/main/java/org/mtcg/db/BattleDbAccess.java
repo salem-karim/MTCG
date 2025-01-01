@@ -23,7 +23,7 @@ public class BattleDbAccess {
   }
 
   public void updateStacksAndDecks(final User winner, final UUID winnerStackId,
-      final Deck winnerDeck, final User looser, final UUID looserStackId,
+                                   final User looser, final UUID looserStackId,
       final Deck looserDeck)
       throws SQLException {
     try (final var connection = DbConnection.getConnection()) {
@@ -34,10 +34,11 @@ public class BattleDbAccess {
         stackDbAccess.deleteCardsFromStack(connection, looserStackId, looserDeck.getCards());
         deckDbAccess.deleteDeck(connection, looserDeck.getId());
 
-        final int index = 0;
+        int index = 0;
         final var loosersDecksCardIds = new UUID[4];
         for (final var card : looserDeck.getCards()) {
           loosersDecksCardIds[index] = card.getId();
+          index++;
         }
 
         // Insert the loosers Deck Cards into the winner Stack
@@ -49,9 +50,13 @@ public class BattleDbAccess {
         userDbAccess.updateUserStats(connection,
             new UserStats(looser.getUsername(), looser.getElo(), looser.getWins(), looser.getLosses()));
 
+        connection.commit();
+
       } catch (final SQLException e) {
         logger.severe("Failed to update Cards and Stats: " + e.getMessage());
         handleRollback(connection);
+      } catch (final Exception e) {
+        logger.severe("Failed to update Cards and Stats: " + e.getMessage());
       }
     }
   }

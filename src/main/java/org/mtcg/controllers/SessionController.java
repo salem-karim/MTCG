@@ -1,6 +1,5 @@
 package org.mtcg.controllers;
 
-import lombok.extern.slf4j.Slf4j;
 import org.mtcg.db.UserDbAccess;
 import org.mtcg.httpserver.HttpRequest;
 import org.mtcg.httpserver.HttpResponse;
@@ -11,7 +10,6 @@ import org.mtcg.utils.HttpStatus;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-@Slf4j
 public class SessionController extends Controller {
   private final UserDbAccess userDbAccess;
 
@@ -36,7 +34,7 @@ public class SessionController extends Controller {
             createJsonMessage("error", "Invalid username/password provided"));
       }
     } catch (final JsonProcessingException e) {
-      log.error("e: ", e);
+      System.out.println(e.getMessage());
       return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
           createJsonMessage("error", "Invalid request format"));
     }
