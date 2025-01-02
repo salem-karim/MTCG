@@ -121,6 +121,7 @@ class PackageControllerTest {
   @Test
   void testAddPackage_Unauthorized() {
     // Simulate no user (unauthorized request)
+    HttpRequest mockRequest = mock(HttpRequest.class);
     when(mockRequest.getUser()).thenReturn(null);
 
     // Call method under test
