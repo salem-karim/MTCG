@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.mtcg.models.User;
 import org.mtcg.models.UserData;
 import org.mtcg.models.UserStats;
@@ -38,6 +39,126 @@ public class UserDbAccess {
       return false;
     } finally {
       connection.close();
+    }
+  }
+
+  public User getUserByUsername(final String username) {
+    try (final var connection = DbConnection.getConnection()) {
+      final String sql = "SELECT * FROM users WHERE username = ?";
+      final var preparedStatement = connection.prepareStatement(sql);
+      preparedStatement.setString(1, username);
+
+      try (final var resultSet = preparedStatement.executeQuery()) {
+        if (resultSet.next()) {
+          logger.info("User retrieved successfully: " + username);
+          return new User((UUID) resultSet.getObject("id"), username, resultSet.getString("name"),
+              resultSet.getString("bio"), resultSet.getString("image"), resultSet.getString("password"),
+              resultSet.getInt("coins"), resultSet.getString("token"), resultSet.getInt("elo"),
+              resultSet.getInt("wins"), resultSet.getInt("losses"));
+        } else {
+          logger.warning("User not found: " + username);
+        }
+      }
+    } catch (final SQLException e) {
+      logger.log(Level.SEVERE, "SQL error while retrieving user: " + username, e);
+    }
+    return null;
+  }
+
+  public User getUserFromToken(final String token) {
+    if (token == null || token.isEmpty()) {
+      return null;
+    }
+    try (final var connection = DbConnection.getConnection()) {
+      // Prepare SQL to retrieve the user by token
+      final String sql = "SELECT * FROM users WHERE token = ?";
+      final var preparedStatement = connection.prepareStatement(sql);
+      preparedStatement.setString(1, token);
+
+      try (final var resultSet = preparedStatement.executeQuery()) {
+        if (resultSet.next()) {
+          final var user = new User((UUID) resultSet.getObject("id"), resultSet.getString("username"),
+              resultSet.getString("name"), resultSet.getString("bio"), resultSet.getString("image"),
+              resultSet.getString("password"), resultSet.getInt("coins"), token, resultSet.getInt("elo"),
+              resultSet.getInt("wins"), resultSet.getInt("losses"));
+          logger.info("User retrieved successfully: " + resultSet.getString("username"));
+          return user;
+        }
+      }
+    } catch (final SQLException e) {
+      logger.warning("Failed to retrieve user with token: " + token);
+    } // return null if User was not found or SQL Error happened
+    return null;
+  }
+
+  public void updateUserCoins(final Connection connection, final User user) throws SQLException {
+    final String updateUserCoinsSQL = "UPDATE users SET coins = ? WHERE id = ?";
+    try (final var updateCoinsStmt = connection.prepareStatement(updateUserCoinsSQL)) {
+      updateCoinsStmt.setInt(1, user.getCoins());
+      updateCoinsStmt.setObject(2, user.getId());
+
+      final int affectedRows = updateCoinsStmt.executeUpdate();
+      if (affectedRows == 0) {
+        throw new SQLException("Failed to update user coins. No user found with the given ID.");
+      }
+    }
+  }
+
+  public boolean updateUserData(final UserData userData, final String username) {
+    try (final var connection = DbConnection.getConnection()) {
+      final String sql = "UPDATE users SET name = ?, bio = ? , image = ? WHERE username = ?";
+      try (final var Stmt = connection.prepareStatement(sql)) {
+        Stmt.setString(1, userData.getUsername());
+        Stmt.setString(2, userData.getBio());
+        Stmt.setString(3, userData.getImage());
+        Stmt.setString(4, username);
+
+        final int affectedRows = Stmt.executeUpdate();
+        if (affectedRows == 0) {
+          throw new SQLException("Failed to update user coins. No user found with the given ID.");
+        } else {
+          return true;
+        }
+      }
+    } catch (final SQLException e) {
+      logger.warning("Failed to update user data of user: " + userData.getUsername());
+    }
+    return false;
+  }
+
+  public void updateUserStats(final Connection connection, final UserStats userStats) throws SQLException {
+    final String sql = "UPDATE users SET elo = ?, wins = ? , losses = ? WHERE username = ?";
+    try (final var Stmt = connection.prepareStatement(sql)) {
+      Stmt.setInt(1, userStats.getElo());
+      Stmt.setInt(2, userStats.getWins());
+      Stmt.setInt(3, userStats.getLosses());
+      Stmt.setString(4, userStats.getUsername());
+
+      final int affectedRows = Stmt.executeUpdate();
+      if (affectedRows == 0) {
+        throw new SQLException("Failed to update user coins. No user found with the given ID.");
+      }
+    }
+  }
+
+  public List<UserStats> getAllUserStats() {
+    final var allUserstats = new ArrayList<UserStats>();
+    try (final var connection = DbConnection.getConnection()) {
+      final String sql = "SELECT username, elo, wins, losses FROM users ORDER BY elo DESC";
+      final var Stmt = connection.prepareStatement(sql);
+      try (final var result = Stmt.executeQuery()) {
+        while (result.next()) {
+          allUserstats.add(new UserStats(
+              result.getString("username"),
+              result.getInt("elo"),
+              result.getInt("wins"),
+              result.getInt("losses")));
+        }
+      }
+      return allUserstats;
+    } catch (final SQLException e) {
+      logger.warning("Failed to get all Users Stats: " + e.getMessage());
+      return null;
     }
   }
 
@@ -93,126 +214,6 @@ public class UserDbAccess {
       }
     } catch (final SQLException rollbackEx) {
       logger.severe("Rollback failed: " + rollbackEx.getMessage());
-    }
-  }
-
-  public User getUserByUsername(final String username) {
-    try (final var connection = DbConnection.getConnection()) {
-      final String sql = "SELECT * FROM users WHERE username = ?";
-      final var preparedStatement = connection.prepareStatement(sql);
-      preparedStatement.setString(1, username);
-
-      try (final var resultSet = preparedStatement.executeQuery()) {
-        if (resultSet.next()) {
-          final String token = resultSet.getString("token");
-          final String hashedPassword = resultSet.getString("password");
-          final UUID id = (UUID) resultSet.getObject("id");
-          final int elo = resultSet.getInt("elo");
-          final int coins = resultSet.getInt("coins");
-          final int wins = resultSet.getInt("wins");
-          final int losses = resultSet.getInt("losses");
-          final String bio = resultSet.getString("bio");
-          final String image = resultSet.getString("image");
-          final String name = resultSet.getString("name");
-          logger.info("User retrieved successfully: " + username);
-          return new User(id, username, name, bio, image, hashedPassword, coins, token, elo, wins, losses);
-        } else {
-          logger.warning("User not found: " + username);
-        }
-      }
-    } catch (final SQLException e) {
-      logger.log(Level.SEVERE, "SQL error while retrieving user: " + username, e);
-    }
-    return null;
-  }
-
-  public User getUserFromToken(final String token) {
-    if (token == null || token.isEmpty()) {
-      return null;
-    }
-    try (final var connection = DbConnection.getConnection()) {
-      // Prepare SQL to retrieve the user by token
-      final String sql = "SELECT * FROM users WHERE token = ?";
-      final var preparedStatement = connection.prepareStatement(sql);
-      preparedStatement.setString(1, token);
-
-      try (final var resultSet = preparedStatement.executeQuery()) {
-        if (resultSet.next()) {
-          final String username = resultSet.getString("username");
-          final String hashedPassword = resultSet.getString("password");
-          final UUID id = (UUID) resultSet.getObject("id");
-          final int elo = resultSet.getInt("elo");
-          final int coins = resultSet.getInt("coins");
-          final int wins = resultSet.getInt("wins");
-          final int losses = resultSet.getInt("losses");
-          final String bio = resultSet.getString("bio");
-          final String image = resultSet.getString("image");
-          final String name = resultSet.getString("name");
-          logger.info("User retrieved successfully: " + username);
-          return new User(id, username, name, bio, image, hashedPassword, coins, token, elo, wins, losses);
-        }
-      }
-    } catch (final SQLException e) {
-      logger.warning("Failed to retrieve user with token: " + token);
-    } // return null if User was not found or SQL Error happened
-    return null;
-  }
-
-  public boolean updateUserCoins(final Connection connection, final User user) throws SQLException {
-    final String updateUserCoinsSQL = "UPDATE users SET coins = ? WHERE id = ?";
-    try (final var updateCoinsStmt = connection.prepareStatement(updateUserCoinsSQL)) {
-      updateCoinsStmt.setInt(1, user.getCoins());
-      updateCoinsStmt.setObject(2, user.getId());
-
-      final int affectedRows = updateCoinsStmt.executeUpdate();
-      if (affectedRows == 0) {
-        throw new SQLException("Failed to update user coins. No user found with the given ID.");
-      }
-      return true;
-    }
-  }
-
-  public boolean updateUserData(final UserData userData, final String username) {
-    try (final var connection = DbConnection.getConnection()) {
-      final String sql = "UPDATE users SET name = ?, bio = ? , image = ? WHERE username = ?";
-      try (final var Stmt = connection.prepareStatement(sql)) {
-        Stmt.setString(1, userData.getUsername());
-        Stmt.setString(2, userData.getBio());
-        Stmt.setString(3, userData.getImage());
-        Stmt.setString(4, username);
-
-        final int affectedRows = Stmt.executeUpdate();
-        if (affectedRows == 0) {
-          throw new SQLException("Failed to update user coins. No user found with the given ID.");
-        } else {
-          return true;
-        }
-      }
-    } catch (final SQLException e) {
-      logger.warning("Failed to update user data of user: " + userData.getUsername());
-    }
-    return false;
-  }
-
-  public List<UserStats> getAllUserStats() {
-    final var allUserstats = new ArrayList<UserStats>();
-    try (final var connection = DbConnection.getConnection()) {
-      final String sql = "SELECT username, elo, wins, losses FROM users ORDER BY elo DESC";
-      final var Stmt = connection.prepareStatement(sql);
-      try (final var result = Stmt.executeQuery()) {
-        while (result.next()) {
-          allUserstats.add(new UserStats(
-              result.getString("username"),
-              result.getInt("elo"),
-              result.getInt("wins"),
-              result.getInt("losses")));
-        }
-      }
-      return allUserstats;
-    } catch (SQLException e) {
-      System.out.println(e);
-      logger.warning("Failed to get all Users Stats");
-      return null;
     }
   }
 }

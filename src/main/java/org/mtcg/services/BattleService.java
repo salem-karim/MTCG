@@ -1,15 +1,15 @@
 package org.mtcg.services;
 
-import org.mtcg.controllers.ScoreBoardController;
+import org.mtcg.controllers.BattleController;
 import org.mtcg.httpserver.HttpRequest;
 import org.mtcg.httpserver.HttpResponse;
 import org.mtcg.utils.Method;
 
-public class ScoreBoardService extends DefaultService {
+public class BattleService extends DefaultService {
 
-  public ScoreBoardService() {
-    final var scoreBoardController = new ScoreBoardController();
-    super.methods.put(Method.GET, scoreBoardController::listScoreBoard);
+  public BattleService() {
+    final var battleController = new BattleController();
+    super.methods.put(Method.POST, battleController::battle);
   }
 
   @Override

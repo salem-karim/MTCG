@@ -5,7 +5,7 @@ import lombok.Getter;
 import org.mtcg.db.UserDbAccess;
 import org.mtcg.models.User;
 import org.mtcg.utils.Method;
-import org.mtcg.utils.exceptions.HttpRequestException;
+import org.mtcg.utils.HttpRequestException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,19 +21,7 @@ public class HttpRequest {
   private final User user;
   private final UserDbAccess userDbAccess;
 
-  public String getServiceRoute() {
-    if (this.pathSegments == null || this.pathSegments.isEmpty()) {
-      return null;
-    } else {
-      return "/" + String.join("/", this.pathSegments);
-    }
-  }
-
-  public User getUserFromToken(String token) {
-    return userDbAccess.getUserFromToken(token);
-  }
-
-  public HttpRequest(final BufferedReader reader, UserDbAccess userdbAccess) throws HttpRequestException {
+  public HttpRequest(final BufferedReader reader, final UserDbAccess userdbAccess) throws HttpRequestException {
     this.userDbAccess = userdbAccess;
     this.headers = new HashMap<>(); // Initialize the headers map
 
@@ -87,9 +75,9 @@ public class HttpRequest {
         this.body = "";
       }
 
-      String authorization = headers.get("Authorization");
+      final String authorization = headers.get("Authorization");
       if (authorization != null && authorization.startsWith("Bearer ")) {
-        String token = authorization.substring(7);
+        final String token = authorization.substring(7);
         this.user = getUserFromToken(token); // Set the user object
       } else {
         user = null;
@@ -99,14 +87,12 @@ public class HttpRequest {
     }
   }
 
-  // Constructor for Unit tests
-
   public HttpRequest(final Method method, final String path, final String body, final String token) {
     this(method, path, body, new HashMap<>(), token, new UserDbAccess());
   }
 
   public HttpRequest(final Method method, final String path, final String body, final Map<String, String> headers,
-      String token, UserDbAccess userdbAccess) {
+      final String token, final UserDbAccess userdbAccess) {
     this.method = method;
     this.path = path;
     this.body = body;
@@ -123,5 +109,19 @@ public class HttpRequest {
         this.pathSegments.add(part);
       }
     }
+  }
+
+  // Constructor for Unit tests
+
+  public String getServiceRoute() {
+    if (this.pathSegments == null || this.pathSegments.isEmpty()) {
+      return null;
+    } else {
+      return "/" + String.join("/", this.pathSegments);
+    }
+  }
+
+  public User getUserFromToken(final String token) {
+    return userDbAccess.getUserFromToken(token);
   }
 }

@@ -1,5 +1,6 @@
 package org.mtcg.httpserver;
 
+import org.mtcg.utils.battle.BattleLobby;
 import org.mtcg.utils.Router;
 
 import java.io.IOException;
@@ -60,6 +61,7 @@ public class HttpServer implements Runnable {
         logger.log(Level.SEVERE, "Error closing server socket", e);
       }
     }
+    BattleLobby.getInstance().shutdown();
     threadPool.shutdown();
     logger.info("HTTP Server closing on port " + port);
   }

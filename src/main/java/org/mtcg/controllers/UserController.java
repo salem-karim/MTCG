@@ -9,7 +9,7 @@ import org.mtcg.models.User;
 import org.mtcg.models.UserData;
 import org.mtcg.utils.ContentType;
 import org.mtcg.utils.HttpStatus;
-import org.mtcg.utils.exceptions.HttpRequestException;
+import org.mtcg.utils.HttpRequestException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -27,9 +27,8 @@ public class UserController extends Controller {
       // Construct the User using the ObjectMapper which selects the correct
       // Constructor
       final var user = getObjectMapper().readValue(request.getBody(), User.class);
-      final boolean added = userDbAccess.addUser(user);
       // Handle Errors
-      if (added) {
+      if (userDbAccess.addUser(user)) {
         return new HttpResponse(HttpStatus.CREATED, ContentType.JSON,
             createJsonMessage("message", "User successfully created"));
       } else {
@@ -40,7 +39,7 @@ public class UserController extends Controller {
       }
 
     } catch (final SQLException e) {
-      System.out.println(e);
+      System.out.println(e.getMessage());
       if (e.getMessage().contains("Conflict")) {
         return new HttpResponse(HttpStatus.CONFLICT, ContentType.JSON,
             createJsonMessage("error", "User with same username already registered"));
@@ -49,7 +48,7 @@ public class UserController extends Controller {
             createJsonMessage("error", "Failed to add user"));
       }
     } catch (final JsonProcessingException e) {
-      System.out.println(e);
+      System.out.println(e.getMessage());
       return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
           createJsonMessage("error", "Invalid request format"));
     }
@@ -70,8 +69,8 @@ public class UserController extends Controller {
       } else {
         try {
           final var userData = new UserData(user.getUsername(), user.getBio(), user.getImage());
-          final String dataJSON = getObjectMapper().writeValueAsString(userData);
-          return new HttpResponse(HttpStatus.OK, ContentType.JSON, dataJSON);
+          return new HttpResponse(HttpStatus.OK, ContentType.JSON,
+              getObjectMapper().writeValueAsString(userData));
         } catch (final JsonProcessingException e) {
           return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
               createJsonMessage("error", "Error serializing User Data."));
@@ -108,7 +107,7 @@ public class UserController extends Controller {
       return new HttpResponse(HttpStatus.UNAUTHORIZED, ContentType.JSON,
           createJsonMessage("error", "Access token is missing or invalid"));
     } catch (final JsonProcessingException e) {
-      System.out.println(e);
+      System.out.println(e.getMessage());
       return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
           createJsonMessage("error", "Invalid request format"));
     }

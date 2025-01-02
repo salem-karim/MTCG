@@ -9,14 +9,14 @@ import org.mtcg.models.Card;
 import org.mtcg.models.Package;
 import org.mtcg.utils.ContentType;
 import org.mtcg.utils.HttpStatus;
-import org.mtcg.utils.exceptions.HttpRequestException;
+import org.mtcg.utils.HttpRequestException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class PackageController extends Controller {
   private final PackageDbAccess pkgDbAccess;
 
-  public PackageController(PackageDbAccess packageDbAccess) {
+  public PackageController(final PackageDbAccess packageDbAccess) {
     this.pkgDbAccess = packageDbAccess;
   }
 

@@ -34,7 +34,7 @@ public class SessionController extends Controller {
             createJsonMessage("error", "Invalid username/password provided"));
       }
     } catch (final JsonProcessingException e) {
-      System.out.println(e);
+      System.out.println(e.getMessage());
       return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
           createJsonMessage("error", "Invalid request format"));
     }

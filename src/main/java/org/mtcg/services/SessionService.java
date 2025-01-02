@@ -9,10 +9,6 @@ public class SessionService extends DefaultService {
   public SessionService() {
     final var sessionController = new SessionController();
     methods.put(Method.POST, sessionController::loginUser); // Handle login
-    // sessionMethods.put(Method.DELETE, sessionController::logoutUser); // Handle
-    // logout
-    // sessionMethods.put(Method.GET, sessionController::checkSession); // Check
-    // session status
   }
 
   @Override

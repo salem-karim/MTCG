@@ -13,7 +13,7 @@ import org.mtcg.services.Service;
 import org.mtcg.utils.ContentType;
 import org.mtcg.utils.HttpStatus;
 import org.mtcg.utils.Router;
-import org.mtcg.utils.exceptions.HttpRequestException;
+import org.mtcg.utils.HttpRequestException;
 
 public class HttpRequestHandler implements Runnable {
   private static final Logger logger = Logger.getLogger(HttpRequestHandler.class.getName());
@@ -44,11 +44,7 @@ public class HttpRequestHandler implements Runnable {
     }
   }
 
-  private HttpRequest parseRequest(final BufferedReader reader) throws HttpRequestException {
-    return new HttpRequest(reader, new UserDbAccess());
-  }
-
-  public void handleRequest(final PrintWriter writer, final HttpRequest request) throws IOException {
+  public void handleRequest(final PrintWriter writer, final HttpRequest request) {
     System.out.println("Received request:");
     System.out.println("Method: " + request.getMethod());
     System.out.println("Path: " + request.getPath());
@@ -79,5 +75,9 @@ public class HttpRequestHandler implements Runnable {
     }
     writer.write(response.toString());
     writer.flush();
+  }
+
+  private HttpRequest parseRequest(final BufferedReader reader) throws HttpRequestException {
+    return new HttpRequest(reader, new UserDbAccess());
   }
 }

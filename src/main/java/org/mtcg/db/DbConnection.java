@@ -34,7 +34,6 @@ public class DbConnection {
   }
 
   public static Connection getConnection() throws SQLException {
-    final Connection connection = DriverManager.getConnection(DB_URL, USER, PASSWORD);
-    return connection;
+    return DriverManager.getConnection(DB_URL, USER, PASSWORD);
   }
 }

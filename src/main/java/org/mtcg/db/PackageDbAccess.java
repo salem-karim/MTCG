@@ -30,6 +30,9 @@ public class PackageDbAccess {
 
       } catch (final SQLException e) {
         logger.severe("Failed to add package: " + e.getMessage());
+        if ("23505".equals(e.getSQLState())) {
+          throw new SQLException("Conflict: Card with this ID already exists in this Package.", e);
+        }
         handleRollback(connection);
         return false; // Indicate failure
       }
@@ -41,6 +44,44 @@ public class PackageDbAccess {
       return false;
     }
 
+  }
+
+  public UUID getRandomPackage(final Connection connection) throws SQLException {
+    final String randomPkgSQL = "SELECT * FROM packages WHERE transaction_id IS NULL LIMIT 1";
+    try (final var stmt = connection.prepareStatement(randomPkgSQL);
+        var result = stmt.executeQuery()) {
+      if (result.next()) {
+        return (UUID) result.getObject("id");
+      } else {
+        logger.warning("No available Packages to be sold");
+        return null;
+      }
+    }
+  }
+
+  public UUID[] getPackageCards(final Connection connection, final UUID pkgId) throws SQLException {
+    int index = 0;
+    final int PKG_SIZE = 5;
+    final var cardIds = new UUID[PKG_SIZE];
+    final String getPkgCardsSQL = "SELECT id FROM cards " +
+        "INNER JOIN package_cards ON cards.id = package_cards.card_id " +
+        "WHERE package_cards.package_id = ?";
+
+    try (final var stmt = connection.prepareStatement(getPkgCardsSQL)) {
+      stmt.setObject(1, pkgId);
+      try (final var result = stmt.executeQuery()) {
+        while (result.next()) {
+          if (index >= PKG_SIZE)
+            throw new IllegalStateException("Package contains more than " + PKG_SIZE + " cards!");
+          cardIds[index] = (UUID) result.getObject("id");
+          index++;
+        }
+        if (index != PKG_SIZE) {
+          throw new IllegalStateException("Package contains fewer than " + PKG_SIZE + " cards!");
+        }
+      }
+    }
+    return cardIds;
   }
 
   private void handleRollback(final Connection con) {
@@ -78,46 +119,6 @@ public class PackageDbAccess {
       }
       packageCardStmt.executeBatch(); // Execute all insert statements
     }
-  }
-
-  public UUID getRandomPackage(final Connection connection) throws SQLException {
-    final String randomPkgSQL = "SELECT * FROM packages WHERE transaction_id IS NULL LIMIT 1";
-    // final String randomPkgSQL = "SELECT * FROM packages WHERE transaction_id IS
-    // NULL ORDER BY RANDOM() LIMIT 1";
-    try (final var stmt = connection.prepareStatement(randomPkgSQL);
-        var result = stmt.executeQuery()) {
-      if (result.next()) {
-        return (UUID) result.getObject("id");
-      } else {
-        logger.warning("No available Packages to be sold");
-        return null;
-      }
-    }
-  }
-
-  public UUID[] getPackageCards(final Connection connection, final UUID pkgId) throws SQLException {
-    int index = 0;
-    final int PKG_SIZE = 5;
-    final var cardIds = new UUID[PKG_SIZE];
-    final String getPkgCardsSQL = "SELECT id FROM cards " +
-        "INNER JOIN package_cards ON cards.id = package_cards.card_id " +
-        "WHERE package_cards.package_id = ?";
-
-    try (final var stmt = connection.prepareStatement(getPkgCardsSQL)) {
-      stmt.setObject(1, pkgId);
-      try (final var result = stmt.executeQuery()) {
-        while (result.next()) {
-          if (index >= PKG_SIZE)
-            throw new IllegalStateException("Package contains more than " + PKG_SIZE + " cards!");
-          cardIds[index] = (UUID) result.getObject("id");
-          index++;
-        }
-        if (index != PKG_SIZE) {
-          throw new IllegalStateException("Package contains fewer than " + PKG_SIZE + " cards!");
-        }
-      }
-    }
-    return cardIds;
   }
 
 }
