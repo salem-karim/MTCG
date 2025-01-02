@@ -132,6 +132,7 @@ public class BattleExecutor implements Callable<String> {
   }
 
   protected Pair<Card> fight(final Card card1, final Card card2) {
+    // TODO: add my special Feature here
     List<SpecialCase> specialCases = List.of(
         new GoblinsAreAfraidOfDragons(),
         new WizardsControlOrks(),
