@@ -41,9 +41,13 @@ public class BattleLobby {
       currentPair = new Pair<>(null, null); // Reset for new users
       userPairs.remove(battlePair);
 
-      // Submit the battle to the executor service
-      BattleExecutor battleExecutor = new BattleExecutor(battlePair.first, battlePair.second);
-      return battleExecutorService.submit(battleExecutor);
+      try {
+        // Submit the battle to the executor service
+        BattleExecutor battleExecutor = new BattleExecutor(battlePair.first, battlePair.second);
+        return battleExecutorService.submit(battleExecutor);
+      } catch (Exception e) {
+        return CompletableFuture.completedFuture(e.getMessage());
+      }
     }
 
     return CompletableFuture.completedFuture("Waiting for an opponent...");

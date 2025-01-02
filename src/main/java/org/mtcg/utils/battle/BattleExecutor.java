@@ -102,7 +102,11 @@ public class BattleExecutor implements Callable<String> {
       user2.setLosses(user2.getLosses() + 1);
       return "User " + user1.getUsername() + " won the Battle.";
     } else {
-      final Pair<Card> resultPair = fight(deck1.getRandomCard(), deck2.getRandomCard());
+      deck1.applyDamageBoost();
+      deck2.applyDamageBoost();
+      final Pair<Card> resultPair = fight(deck1, deck1.getRandomCard(), deck2, deck2.getRandomCard());
+      deck1.restoreDamage();
+      deck2.restoreDamage();
       if (resultPair != null) {
         final var looserCard = resultPair.first;
         final var winnerCard = resultPair.second;
@@ -121,7 +125,11 @@ public class BattleExecutor implements Callable<String> {
   }
 
   protected void moveLooserCardIntoWinnerDeck(Deck deck1, Deck deck2, Card looserCard) {
-    // The winner is the deck that does not contain the looser card
+    // Restore any damage boosts before moving
+    deck1.restoreDamage();
+    deck2.restoreDamage();
+
+    // Move the card
     if (deck1.getCards().contains(looserCard)) {
       deck1.getCards().remove(looserCard);
       deck2.getCards().add(looserCard);
@@ -129,10 +137,17 @@ public class BattleExecutor implements Callable<String> {
       deck2.getCards().remove(looserCard);
       deck1.getCards().add(looserCard);
     }
+
+    // Reapply appropriate boosts after moving
+    deck1.applyDamageBoost();
+    deck2.applyDamageBoost();
   }
 
-  protected Pair<Card> fight(final Card card1, final Card card2) {
-    // TODO: add my special Feature here
+  protected Pair<Card> fight(final Deck battleDeck1, final Card card1, final Deck battleDeck2, final Card card2) {
+    Deck deck1Contains = battleDeck1.getCards().contains(card1) ? battleDeck1 : battleDeck2;
+    Deck deck2Contains = battleDeck2.getCards().contains(card2) ? battleDeck2 : battleDeck1;
+
+    // Check for special cases first
     List<SpecialCase> specialCases = List.of(
         new GoblinsAreAfraidOfDragons(),
         new WizardsControlOrks(),
@@ -140,29 +155,47 @@ public class BattleExecutor implements Callable<String> {
         new KrakenIsImmuneToSpells(),
         new FireElvesEvadeDragons());
 
-    // Step 1: Check for any special case
+    // Handle special cases with small deck probability reversal
     for (SpecialCase specialCase : specialCases) {
       if (specialCase.applies(card1, card2)) {
-        // If a special case applies, apply the logic and return the result
-        Card winner = specialCase.apply(card1, card2);
-        return new Pair<>(winner == card1 ? card2 : card1, winner);
+        Card normalWinner = specialCase.apply(card1, card2);
+
+        // Check if the losing deck is small and should get a chance to reverse the
+        // outcome
+        Deck losingDeck = (normalWinner == card1) ? deck2Contains : deck1Contains;
+        if (losingDeck.isSmallDeck()) {
+          double reverseProbability = losingDeck.getSmallDeckBoostProbability();
+          if (Math.random() < reverseProbability) {
+            // Reverse the outcome
+            Card actualWinner = (normalWinner == card1) ? card2 : card1;
+            actualWinner.tryApplyVictoryBoost();
+            return new Pair<>(normalWinner, actualWinner); // Reversed!
+          }
+        }
+
+        normalWinner.tryApplyVictoryBoost();
+        return new Pair<>(normalWinner == card1 ? card2 : card1, normalWinner);
       }
     }
 
-    // Step 2: Handle Pure Monster Fights
+    // Normal combat resolution
     if (card1.getCardType() == Card.CardType.MONSTER && card2.getCardType() == Card.CardType.MONSTER) {
-      return card1.getDamage() > card2.getDamage() ? new Pair<>(card2, card1) : new Pair<>(card1, card2);
+      Card winner = card1.getDamage() > card2.getDamage() ? card1 : card2;
+      winner.tryApplyVictoryBoost();
+      return new Pair<>(winner == card1 ? card2 : card1, winner);
     }
 
-    // Step 3: Handle Spell Fights
+    // Spell combat resolution
     if (card1.getCardType() == Card.CardType.SPELL || card2.getCardType() == Card.CardType.SPELL) {
       double damage1 = card1.getDamage() * calculateDamage(card1, card2);
       double damage2 = card2.getDamage() * calculateDamage(card2, card1);
 
-      return damage1 > damage2 ? new Pair<>(card2, card1) : new Pair<>(card1, card2);
+      Card winner = damage1 > damage2 ? card1 : card2;
+      winner.tryApplyVictoryBoost();
+      return new Pair<>(winner == card1 ? card2 : card1, winner);
     }
 
-    return null;
+    return null; // Tie case
   }
 
 }

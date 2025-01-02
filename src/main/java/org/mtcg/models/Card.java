@@ -6,7 +6,9 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Getter;
+import lombok.Setter;
 
+@Setter
 @Getter
 public class Card {
   public enum CardType {
@@ -25,6 +27,8 @@ public class Card {
   private double damage = 0.0;
   private final CardType cardType;
   private final Element element;
+  private boolean hasVictoryBoost = false;
+  private static final double VICTORY_BOOST = 1.3;
 
   // Constructor with @JsonProperty annotations on parameters
   public Card(
@@ -57,8 +61,10 @@ public class Card {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
     Card card = (Card) o;
     return Objects.equals(id, card.id);
   }
@@ -66,6 +72,13 @@ public class Card {
   @Override
   public int hashCode() {
     return Objects.hash(id);
+  }
+
+  public void tryApplyVictoryBoost() {
+    if (!hasVictoryBoost && Math.random() < 0.5) {
+      this.damage *= VICTORY_BOOST;
+      this.hasVictoryBoost = true;
+    }
   }
 
 }
