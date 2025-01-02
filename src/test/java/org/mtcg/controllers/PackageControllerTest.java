@@ -15,8 +15,6 @@ import org.mtcg.models.User;
 import org.mtcg.utils.ContentType;
 import org.mtcg.utils.HttpStatus;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.util.UUID;
 
 class PackageControllerTest {
@@ -28,15 +26,12 @@ class PackageControllerTest {
   @Mock
   private User mockUser;
 
-  private ObjectMapper objectMapper;
-
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
 
     // Create the PackageController with a mock PackageDbAccess
     packageController = new PackageController(mockPackageDbAccess);
-    objectMapper = new ObjectMapper();
   }
 
   @Test
@@ -69,7 +64,7 @@ class PackageControllerTest {
     when(mockPackageDbAccess.addPackage(any())).thenReturn(true);
 
     // Verify card parsing
-    final Card[] parsedCards = objectMapper.readValue(cardsJson, Card[].class);
+    final Card[] parsedCards = packageController.getObjectMapper().readValue(cardsJson, Card[].class);
     assertEquals(5, parsedCards.length, "Should parse 5 cards correctly");
 
     // Call method under test

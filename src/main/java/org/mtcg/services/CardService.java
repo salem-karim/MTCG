@@ -1,7 +1,6 @@
 package org.mtcg.services;
 
 import org.mtcg.controllers.CardController;
-import org.mtcg.db.CardDbAccess;
 import org.mtcg.httpserver.HttpRequest;
 import org.mtcg.httpserver.HttpResponse;
 import org.mtcg.utils.Method;
@@ -9,7 +8,7 @@ import org.mtcg.utils.Method;
 public class CardService extends DefaultService {
 
   public CardService() {
-    final var cardController = new CardController(new CardDbAccess());
+    final var cardController = new CardController();
     methods.put(Method.GET, cardController::listCards);
   }
 

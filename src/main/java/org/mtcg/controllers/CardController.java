@@ -15,7 +15,12 @@ public class CardController extends Controller {
   private final CardDbAccess cardDbAccess;
 
   public CardController(final CardDbAccess cardDbAccess) {
+    super();
     this.cardDbAccess = cardDbAccess;
+  }
+
+  public CardController() {
+    this(new CardDbAccess());
   }
 
   public HttpResponse listCards(final HttpRequest request) {

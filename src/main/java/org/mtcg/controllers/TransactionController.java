@@ -14,8 +14,12 @@ public class TransactionController extends Controller {
   private final TransactionDbAccess transactionDbAccess;
 
   public TransactionController() {
+    this(new TransactionDbAccess());
+  }
+
+  public TransactionController(final TransactionDbAccess db) {
     super();
-    this.transactionDbAccess = new TransactionDbAccess();
+    this.transactionDbAccess = db;
   }
 
   public HttpResponse buyPackage(final HttpRequest request) {

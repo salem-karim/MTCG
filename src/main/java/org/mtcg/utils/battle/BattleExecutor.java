@@ -58,8 +58,6 @@ public class BattleExecutor implements Callable<String> {
       rounds++;
     }
 
-    System.out.println(rounds);
-
     if (rounds >= 100) {
       result = BattleResult.TIE;
     }
@@ -122,7 +120,7 @@ public class BattleExecutor implements Callable<String> {
     }
   }
 
-  private void moveLooserCardIntoWinnerDeck(Deck deck1, Deck deck2, Card looserCard) {
+  protected void moveLooserCardIntoWinnerDeck(Deck deck1, Deck deck2, Card looserCard) {
     // The winner is the deck that does not contain the looser card
     if (deck1.getCards().contains(looserCard)) {
       deck1.getCards().remove(looserCard);
@@ -133,7 +131,7 @@ public class BattleExecutor implements Callable<String> {
     }
   }
 
-  private Pair<Card> fight(final Card card1, final Card card2) {
+  protected Pair<Card> fight(final Card card1, final Card card2) {
     List<SpecialCase> specialCases = List.of(
         new GoblinsAreAfraidOfDragons(),
         new WizardsControlOrks(),

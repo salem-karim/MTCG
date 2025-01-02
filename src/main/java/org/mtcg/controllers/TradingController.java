@@ -19,10 +19,14 @@ public class TradingController extends Controller {
   private final TradingDbAccess tradingDbAccess;
   private final CardDbAccess cardDbAccess;
 
-  public TradingController() {
+  public TradingController(final TradingDbAccess tradeDb, final CardDbAccess cardDb) {
     super();
-    this.tradingDbAccess = new TradingDbAccess();
-    this.cardDbAccess = new CardDbAccess();
+    this.tradingDbAccess = tradeDb;
+    this.cardDbAccess = cardDb;
+  }
+
+  public TradingController() {
+    this(new TradingDbAccess(), new CardDbAccess());
   }
 
   public HttpResponse listDeals(final HttpRequest request) {

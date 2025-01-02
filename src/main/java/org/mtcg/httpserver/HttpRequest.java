@@ -15,7 +15,7 @@ import java.util.*;
 public class HttpRequest {
   private final Method method;
   private final String path;
-  private final ArrayList<String> pathSegments;
+  private final List<String> pathSegments;
   private final String body;
   private final Map<String, String> headers;
   private final User user;

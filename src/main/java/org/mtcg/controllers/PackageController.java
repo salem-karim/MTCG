@@ -17,7 +17,12 @@ public class PackageController extends Controller {
   private final PackageDbAccess pkgDbAccess;
 
   public PackageController(final PackageDbAccess packageDbAccess) {
+    super();
     this.pkgDbAccess = packageDbAccess;
+  }
+
+  public PackageController() {
+    this(new PackageDbAccess());
   }
 
   public HttpResponse addPackage(final HttpRequest request) {
