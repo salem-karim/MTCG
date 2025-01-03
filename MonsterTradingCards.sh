@@ -238,7 +238,7 @@ echo .
 
 if [ $pauseFlag -eq 1 ]; then read -p "Press enter to continue..."; fi
 
-REM --------------------------------------------------
+# --------------------------------------------------
 echo "13) show configured deck different representation"
 echo kienboec
 curl -i -X GET "http://localhost:10001/deck?format=plain" --header "Authorization: Bearer kienboec-mtcgToken"

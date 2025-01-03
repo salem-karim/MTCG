@@ -105,7 +105,8 @@ class PackageControllerTest {
 
     // Call method under test
     final HttpResponse response = packageController.addPackage(mockRequest);
-    final String shouldEqual = packageController.createJsonMessage("error", "Not 5 cards in Request Body");
+    final String shouldEqual = packageController.createJsonMessage("error",
+        "The provided package did not include the required amount of cards");
 
     // Assertions
     assertEquals(HttpStatus.BAD_REQUEST.code, response.getStatusCode());

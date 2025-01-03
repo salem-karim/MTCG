@@ -38,6 +38,10 @@ public class PackageController extends Controller {
 
       // Construct the cards from the request body
       final Card[] cards = getObjectMapper().readValue(request.getBody(), Card[].class);
+      if (cards.length != 5) {
+        return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
+            createJsonMessage("error", "The provided package did not include the required amount of cards"));
+      }
 
       // Make the Package object
       final var pkg = new Package(cards, request.getUser().getId());

@@ -74,6 +74,9 @@ public class DeckDbAccess {
       try {
         connection.setAutoCommit(false); // Start transaction
 
+        // Validate that the deck is not yet configured
+        validateNonConflictInDeck(connection, deckId, cardIds);
+
         insertDeckCards(connection, deckId, cardIds); // Add cards to the deck
         new StackDbAccess().updateStacksDeckId(connection, deckId, userId, cardIds); // Update user's stack
 
@@ -83,10 +86,8 @@ public class DeckDbAccess {
         handleRollback(connection); // Rollback transaction on failure
 
         // Re-throw specific exceptions or handle them accordingly
-        if ("23505".equals(e.getSQLState())) {
+        if (e.getMessage().contains("Conflict")) {
           throw new SQLException("Conflict: Deck is already configured.", e);
-        } else if (e.getMessage().contains("A deck can only contain 4 cards")) {
-          throw new SQLException(e);
         } else if (e.getMessage()
             .contains("One of the cards is either not in the user's stack or is part of a trading deal.")) {
           throw e;
@@ -94,6 +95,19 @@ public class DeckDbAccess {
 
         logger.severe("Failed to configure Deck: " + e.getMessage());
         return false; // Indicate failure if not re-throwing
+      }
+    }
+  }
+
+  private void validateNonConflictInDeck(final Connection connection, final UUID deckId, final UUID[] cardIds)
+      throws SQLException {
+    final String sql = "SELECT COUNT(*) FROM deck_cards WHERE deck_id = ?";
+    try (final var stmt = connection.prepareStatement(sql)) {
+      stmt.setObject(1, deckId);
+      try (final var result = stmt.executeQuery()) {
+        if (result.next() && result.getInt(1) + cardIds.length > 4) {
+          throw new SQLException("Conflict: The Deck is already configured");
+        }
       }
     }
   }
@@ -111,8 +125,6 @@ public class DeckDbAccess {
     } catch (final SQLException e) {
       if ("23505".equals(e.getSQLState())) {
         throw new SQLException("Conflict: Deck is already configured.", e);
-      } else if (e.getMessage().contains("A deck can only contain 4 cards")) {
-        throw e;
       }
       logger.severe("Failed to configure Deck: " + e.getMessage());
     }

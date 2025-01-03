@@ -73,6 +73,10 @@ public class DeckController extends Controller {
         throw new HttpRequestException("User not Authorized");
       }
       final UUID[] cardIds = getObjectMapper().readValue(request.getBody(), UUID[].class);
+      if (cardIds.length != 4) {
+        return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
+            createJsonMessage("error", "The provided deck did not include the required amount of cards"));
+      }
       final UUID deckId = deckDbAccess.getDeckId(request.getUser().getId());
 
       if (deckDbAccess.configureDeck(deckId, cardIds, request.getUser().getId())) {
@@ -100,12 +104,6 @@ public class DeckController extends Controller {
         // Custom Exception if the Users Stack does not include the cards
         return new HttpResponse(HttpStatus.FORBIDDEN, ContentType.JSON, createJsonMessage("error",
             "At least one of the provided cards does not belong to the user or is not available."));
-
-      } else if (e.getMessage().contains("A deck can only contain 4 cards")) {
-        // Custom Bad Request Error in DB if Body does not contain 4 cards
-        return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
-            createJsonMessage("error", "The provided deck did not include the required amount of cards"));
-
       } else {
         // Should not happen so INTERNAL_SERVER_ERROR
         return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON,
