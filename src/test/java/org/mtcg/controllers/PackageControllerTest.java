@@ -162,10 +162,10 @@ class PackageControllerTest {
 
     // Call method under test
     final HttpResponse response = packageController.addPackage(mockRequest);
-    final String shouldEqual = packageController.createJsonMessage("error", "Bad Request");
+    final String shouldEqual = packageController.createJsonMessage("error", "Failed to add Package");
 
     // Assertions
-    assertEquals(HttpStatus.BAD_REQUEST.code, response.getStatusCode());
+    assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.code, response.getStatusCode());
     assertEquals(ContentType.JSON.toString(), response.getContentType());
     assertEquals(shouldEqual, response.getBody());
   }

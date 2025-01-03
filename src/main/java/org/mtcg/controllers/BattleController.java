@@ -23,8 +23,11 @@ public class BattleController extends Controller {
           createJsonMessage("error", "Access token is missing or invalid"));
     }
     try {
+      // Battle Lobby adds user to list and
+      // if 2 users are found battle starts and returns battle Log
       final String battleLog = battleLobby.addUserToLobby(user).get();
       return new HttpResponse(HttpStatus.OK, ContentType.JSON, createJsonMessage("message", battleLog));
+      // catch Error because of asynchronous Method
     } catch (ExecutionException e) {
       System.out.println(e.getMessage());
       return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,

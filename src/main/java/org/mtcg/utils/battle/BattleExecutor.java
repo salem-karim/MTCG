@@ -49,6 +49,7 @@ public class BattleExecutor implements Callable<String> {
   }
 
   private String performBattle(final Deck deck1, final Deck deck2) throws Exception {
+    // Make copy of Deck using Copy Constructor
     final var battleDeck1 = new Deck(deck1);
     final var battleDeck2 = new Deck(deck2);
     int rounds = 1;
@@ -58,10 +59,12 @@ public class BattleExecutor implements Callable<String> {
       rounds++;
     }
 
+    // If rounds was 100 make the result a Tie
     if (rounds >= 100) {
       result = BattleResult.TIE;
     }
 
+    // update DB when result was not a Tie
     switch (result) {
       case BattleResult.USER1_WIN:
         updateDb(user1, user2, deck2);
@@ -75,11 +78,15 @@ public class BattleExecutor implements Callable<String> {
       default:
         break;
     }
+    // return the battle Log as one String
     return battleLog;
   }
 
   private void updateDb(final User winner, final User looser, final Deck looserDeck)
       throws SQLException {
+    // get both StackIds and change the stackIds in the stack_cards table
+    // to the winners StackIds
+    // also Delete the cards of the looser from the deck_cards table
     final var winnerStackId = stackDbAccess.getStackId(DbConnection.getConnection(), winner.getId());
     final var looserStackId = stackDbAccess.getStackId(DbConnection.getConnection(), looser.getId());
     battleDbAccess.updateStacksAndDecks(winner, winnerStackId, looser, looserStackId, looserDeck);
@@ -87,6 +94,7 @@ public class BattleExecutor implements Callable<String> {
   }
 
   private String playRound(final Deck deck1, final Deck deck2, final int round) {
+    // If either of the decks are empty set the needed Data
     if (deck1.getCards().isEmpty()) {
       result = BattleResult.USER2_WIN;
       user2.setElo(user2.getElo() + 3);
@@ -102,12 +110,16 @@ public class BattleExecutor implements Callable<String> {
       user2.setLosses(user2.getLosses() + 1);
       return "User " + user1.getUsername() + " won the Battle.";
     } else {
+      // else apply the Boost if possible, fight restore Damage because of Math
+      // reasons and handle non tie outcome
       deck1.applyDamageBoost();
       deck2.applyDamageBoost();
       final Pair<Card> resultPair = fight(deck1, deck1.getRandomCard(), deck2, deck2.getRandomCard());
       deck1.restoreDamage();
       deck2.restoreDamage();
       if (resultPair != null) {
+        // if there is a winner move the card from looser deck to winner deck which are
+        // copies so the original are the same for DB Reasons
         final var looserCard = resultPair.first;
         final var winnerCard = resultPair.second;
         moveLooserCardIntoWinnerDeck(deck1, deck2, looserCard);
@@ -129,7 +141,7 @@ public class BattleExecutor implements Callable<String> {
     deck1.restoreDamage();
     deck2.restoreDamage();
 
-    // Move the card
+    // Move the card needed to Override equals method in Card class
     if (deck1.getCards().contains(looserCard)) {
       deck1.getCards().remove(looserCard);
       deck2.getCards().add(looserCard);

@@ -31,6 +31,7 @@ public class PackageController extends Controller {
       if (request.getUser() == null) {
         throw new HttpRequestException("User not Authorized");
       }
+      // Make sure the user is admin
       if (!request.getUser().getUsername().equals("admin")) {
         return new HttpResponse(HttpStatus.FORBIDDEN, ContentType.JSON,
             createJsonMessage("error", "Provided user is not \"admin\""));
@@ -45,16 +46,17 @@ public class PackageController extends Controller {
 
       // Make the Package object
       final var pkg = new Package(cards, request.getUser().getId());
-      final boolean added = pkgDbAccess.addPackage(pkg);
 
-      if (added) {
+      // if DB Method fails respond with Server Error
+      if (pkgDbAccess.addPackage(pkg)) {
         return new HttpResponse(HttpStatus.CREATED, ContentType.JSON,
             createJsonMessage("message", "Package created successfully"));
       } else {
-        return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,
-            createJsonMessage("error", "Bad Request"));
+        return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON,
+            createJsonMessage("error", "Failed to add Package"));
       }
 
+      // Other Errors
     } catch (final JsonProcessingException e) {
       System.out.println(e.getMessage());
       return new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON,

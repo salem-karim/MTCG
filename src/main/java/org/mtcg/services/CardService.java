@@ -7,6 +7,7 @@ import org.mtcg.utils.Method;
 
 public class CardService extends DefaultService {
 
+  // Same as User Service
   public CardService() {
     final var cardController = new CardController();
     methods.put(Method.GET, cardController::listCards);

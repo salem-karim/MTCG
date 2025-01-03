@@ -17,6 +17,7 @@ public class StatController extends Controller {
           createJsonMessage("error", "Access token is missing or invalid"));
     } else {
       try {
+        // Make a UserStats Object from User from request
         final var userStats = new UserStats(user.getUsername(), user.getElo(), user.getWins(), user.getLosses());
         return new HttpResponse(HttpStatus.OK, ContentType.JSON, getObjectMapper().writeValueAsString(userStats));
       } catch (final JsonProcessingException e) {

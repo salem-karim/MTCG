@@ -7,6 +7,7 @@ import org.mtcg.utils.Method;
 
 public class StatService extends DefaultService {
 
+  // Same as User Service
   public StatService() {
     final var statController = new StatController();
     super.methods.put(Method.GET, statController::listUsersStats);

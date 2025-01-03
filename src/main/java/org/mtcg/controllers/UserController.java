@@ -21,23 +21,19 @@ public class UserController extends Controller {
     this.userDbAccess = new UserDbAccess();
   }
 
-  // Method to add a user
   public HttpResponse addUser(final HttpRequest request) {
     try {
-      // Construct the User using the ObjectMapper which selects the correct
-      // Constructor
+      // Make the User using the ObjectMapper which gets the JSON and uses the correct
+      // Constructor annotated as JsonCreator
       final var user = getObjectMapper().readValue(request.getBody(), User.class);
-      // Handle Errors
       if (userDbAccess.addUser(user)) {
         return new HttpResponse(HttpStatus.CREATED, ContentType.JSON,
             createJsonMessage("message", "User successfully created"));
       } else {
         // This should never happen, as the addUser method in UserDbAccess
-        // should either succeed or throw an exception
         return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON,
             createJsonMessage("error", "Failed to add user"));
       }
-
     } catch (final SQLException e) {
       System.out.println(e.getMessage());
       if (e.getMessage().contains("Conflict")) {
@@ -56,13 +52,18 @@ public class UserController extends Controller {
 
   public HttpResponse listUser(final HttpRequest request) {
     try {
+      // gets user from requests Authentication header and username from path
       final var reqUser = request.getUser();
       final String username = request.getPathSegments().get(1);
+
+      // If unauthorized or request username and username dont match or isn't admin
+      // respond with UNAUTHORIZED
       if (reqUser == null) {
         throw new HttpRequestException("Access token is missing or invalid");
       } else if (!reqUser.getUsername().equals(username) && !reqUser.getUsername().equals("admin")) {
         throw new HttpRequestException("Access token is missing or invalid");
       }
+      // else get user from DB and respond with UserData in JSON
       final var user = userDbAccess.getUserByUsername(username);
       if (user == null) {
         return new HttpResponse(HttpStatus.NOT_FOUND, ContentType.JSON, createJsonMessage("error", "User not Found"));
@@ -84,6 +85,7 @@ public class UserController extends Controller {
   }
 
   public HttpResponse updateUser(final HttpRequest request) {
+    // Same as listUser but instead does a UPDATE QUERY and responds with OK
     try {
       final var reqUser = request.getUser();
       final String username = request.getPathSegments().get(1);

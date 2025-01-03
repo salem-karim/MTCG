@@ -34,6 +34,7 @@ public class TradingController extends Controller {
       return new HttpResponse(HttpStatus.UNAUTHORIZED, ContentType.JSON,
           createJsonMessage("error", "Access token is missing or invalid"));
     } else {
+      // Get all Trading Deals and respond with formatted JSON
       final List<Trade> trades = tradingDbAccess.getTradingDeals();
       if (trades == null) {
         return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON,

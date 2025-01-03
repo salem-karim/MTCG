@@ -27,11 +27,14 @@ public class DeckController extends Controller {
         throw new HttpRequestException("User not Authorized");
       }
 
+      // get the users DeckId and the cards in it
       final UUID deckId = deckDbAccess.getDeckId(request.getUser().getId());
       final Deck deck = deckDbAccess.getDeckCards(deckId);
       if (deck == null) {
         return new HttpResponse(HttpStatus.NO_CONTENT, ContentType.JSON, "[ ]");
+        // only continue if the deck has correct amount of cards
       } else if (deck.getCards().size() == 4) {
+        // either format deck cards in plain text or in JSON
         if (request.getPath().contains("format=plain")) {
           StringBuilder cardString = new StringBuilder();
           for (final var card : deck.getCards()) {

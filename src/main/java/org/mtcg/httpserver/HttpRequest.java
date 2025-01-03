@@ -9,7 +9,11 @@ import org.mtcg.utils.HttpRequestException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Locale;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 @Getter
 public class HttpRequest {
@@ -21,9 +25,18 @@ public class HttpRequest {
   private final User user;
   private final UserDbAccess userDbAccess;
 
+  // gets the Route in 1 String for Router class
+  public String getServiceRoute() {
+    if (this.pathSegments == null || this.pathSegments.isEmpty()) {
+      return null;
+    } else {
+      return "/" + String.join("/", this.pathSegments);
+    }
+  }
+
   public HttpRequest(final BufferedReader reader, final UserDbAccess userdbAccess) throws HttpRequestException {
     this.userDbAccess = userdbAccess;
-    this.headers = new HashMap<>(); // Initialize the headers map
+    this.headers = new HashMap<>();
 
     try {
       // Read the request line
@@ -75,10 +88,11 @@ public class HttpRequest {
         this.body = "";
       }
 
+      // "Middleware" gets the token of header and uses DB Access Method
       final String authorization = headers.get("Authorization");
       if (authorization != null && authorization.startsWith("Bearer ")) {
         final String token = authorization.substring(7);
-        this.user = getUserFromToken(token); // Set the user object
+        this.user = userDbAccess.getUserFromToken(token); // Set the user object
       } else {
         user = null;
       }
@@ -87,6 +101,7 @@ public class HttpRequest {
     }
   }
 
+  // Constructor for Unit tests and dependency ingection
   public HttpRequest(final Method method, final String path, final String body, final String token) {
     this(method, path, body, new HashMap<>(), token, new UserDbAccess());
   }
@@ -100,7 +115,7 @@ public class HttpRequest {
     this.pathSegments = new ArrayList<>();
 
     this.userDbAccess = userdbAccess;
-    this.user = getUserFromToken(token);
+    this.user = userDbAccess.getUserFromToken(token);
 
     // Split path into segments
     final String[] pathParts = path.split("/");
@@ -111,17 +126,4 @@ public class HttpRequest {
     }
   }
 
-  // Constructor for Unit tests
-
-  public String getServiceRoute() {
-    if (this.pathSegments == null || this.pathSegments.isEmpty()) {
-      return null;
-    } else {
-      return "/" + String.join("/", this.pathSegments);
-    }
-  }
-
-  public User getUserFromToken(final String token) {
-    return userDbAccess.getUserFromToken(token);
-  }
 }

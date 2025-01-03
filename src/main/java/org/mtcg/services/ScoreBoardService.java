@@ -7,6 +7,7 @@ import org.mtcg.utils.Method;
 
 public class ScoreBoardService extends DefaultService {
 
+  // Same as User Service
   public ScoreBoardService() {
     final var scoreBoardController = new ScoreBoardController();
     super.methods.put(Method.GET, scoreBoardController::listScoreBoard);

@@ -7,6 +7,7 @@ import org.mtcg.utils.Method;
 
 public class DeckService extends DefaultService {
 
+  // Same as User Service
   public DeckService() {
     final var deckController = new DeckController();
     super.methods.put(Method.GET, deckController::getDeck);

@@ -25,6 +25,7 @@ public class ScoreBoardController extends Controller {
       if (request.getUser() == null) {
         throw new HttpRequestException("User not Authorized");
       }
+      // Get the stats from All Users and format into JSON
       final List<UserStats> allUserStats = userDbAccess.getAllUserStats();
       if (allUserStats == null) {
         return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON,

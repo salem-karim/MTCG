@@ -24,46 +24,48 @@ public class TransactionController extends Controller {
 
   public HttpResponse buyPackage(final HttpRequest request) {
     try {
-      // Step 1: Get user from token to check for auth
+      // Get user from token
       final User user = request.getUser();
       if (user == null) {
         throw new HttpRequestException("User not Authorized");
       }
 
-      // Step 2: Check user's coin balance for enough coins
+      // Check user's coin balance for enough coins
       if (user.getCoins() < 5) {
         return new HttpResponse(HttpStatus.FORBIDDEN, ContentType.JSON,
             createJsonMessage("error", "Not enough money for buying a card package"));
       }
 
       try {
-        // Step 3: Retrieve following data to complete the db transaction
-        // Package, card data and users Stack ID
+        // Retrieve following data to complete the DB transaction
+        // Package, card data from DB and users Stack ID
         final UUID packageId = transactionDbAccess.getRandomPackage();
+        // If Package Id is null it means there are not Packages in the DB and admin
+        // needs to create more Packages
         if (packageId == null) {
           return new HttpResponse(HttpStatus.NOT_FOUND, ContentType.JSON,
               createJsonMessage("error", "No card packages available for buying"));
         }
 
         final UUID[] cardIds = transactionDbAccess.getPackageCards(packageId);
+        // If object is null or the wasn't filled respond with Server Error
         if (cardIds == null || cardIds.length == 0) {
           return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON,
               createJsonMessage("error", "Failed to retrieve package cards"));
         }
 
         final UUID stackId = transactionDbAccess.getStackId(user.getId());
+        // Same here with StackId
         if (stackId == null) {
           return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON,
               createJsonMessage("error", "User does not have a valid stack"));
         }
 
+        // set the Users coins to be updated when Package has been bought successfully
         user.setCoins(user.getCoins() - 5);
 
-        // Step 4: Perform the transaction (using a single connection)
+        // Perform the transaction (using a single connection)
         transactionDbAccess.performTransaction(user, packageId, cardIds, stackId);
-
-        // Deduct coins from the user object after successful transaction
-
         return new HttpResponse(HttpStatus.CREATED, ContentType.JSON,
             createJsonMessage("message", "Package purchased successfully"));
 

@@ -27,10 +27,10 @@ public class HttpRequestHandler implements Runnable {
 
   @Override
   public void run() {
-    try (PrintWriter writer = new PrintWriter(clientSocket.getOutputStream(), true);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
+    try (final var writer = new PrintWriter(clientSocket.getOutputStream(), true);
+        final var reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
 
-      final HttpRequest request = parseRequest(reader);
+      final var request = new HttpRequest(reader, new UserDbAccess());
       handleRequest(writer, request);
 
     } catch (IOException | HttpRequestException e) {
@@ -44,7 +44,7 @@ public class HttpRequestHandler implements Runnable {
     }
   }
 
-  public void handleRequest(final PrintWriter writer, final HttpRequest request) {
+  private void handleRequest(final PrintWriter writer, final HttpRequest request) {
     System.out.println("Received request:");
     System.out.println("Method: " + request.getMethod());
     System.out.println("Path: " + request.getPath());
@@ -52,6 +52,7 @@ public class HttpRequestHandler implements Runnable {
     System.out.println("Body: " + request.getBody());
 
     HttpResponse response = null;
+    // If path is not null and not empty use Router to resolve Service Mapping
     if (request.getPath() == null) {
       response = new HttpResponse(HttpStatus.BAD_REQUEST, ContentType.JSON, "");
     } else if ("/".equals(request.getPath())) {
@@ -60,11 +61,12 @@ public class HttpRequestHandler implements Runnable {
           "<html><body>Welcome to the homepage!</body></html>");
     } else {
       Service service = null;
-      // Otherwise use the router to get right Service and resolve it
+      // Hardcode "dynamic" Paths
       if (request.getServiceRoute().contains("/users/"))
         service = this.router.resolve("/users/");
       else if (request.getServiceRoute().contains("/tradings/"))
         service = this.router.resolve("/tradings/");
+      // For non "dynamic" Paths
       else
         service = this.router.resolve(request.getServiceRoute());
       if (service != null) {
@@ -75,9 +77,5 @@ public class HttpRequestHandler implements Runnable {
     }
     writer.write(response.toString());
     writer.flush();
-  }
-
-  private HttpRequest parseRequest(final BufferedReader reader) throws HttpRequestException {
-    return new HttpRequest(reader, new UserDbAccess());
   }
 }

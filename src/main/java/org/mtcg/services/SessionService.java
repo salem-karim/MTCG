@@ -6,9 +6,11 @@ import org.mtcg.httpserver.HttpResponse;
 import org.mtcg.utils.Method;
 
 public class SessionService extends DefaultService {
+
+  // Same as User Service
   public SessionService() {
     final var sessionController = new SessionController();
-    methods.put(Method.POST, sessionController::loginUser); // Handle login
+    methods.put(Method.POST, sessionController::loginUser);
   }
 
   @Override

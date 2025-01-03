@@ -7,6 +7,7 @@ import org.mtcg.utils.Method;
 
 public class BattleService extends DefaultService {
 
+  // Same as User Service
   public BattleService() {
     final var battleController = new BattleController();
     super.methods.put(Method.POST, battleController::battle);

@@ -7,6 +7,7 @@ import org.mtcg.utils.Method;
 
 public class PackageService extends DefaultService {
 
+  // Same as User Service
   public PackageService() {
     final var packageController = new PackageController();
     methods.put(Method.POST, packageController::addPackage);

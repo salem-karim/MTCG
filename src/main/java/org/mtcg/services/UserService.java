@@ -7,6 +7,8 @@ import org.mtcg.utils.Method;
 
 public class UserService extends DefaultService {
 
+  // Map the Methods to Controller Methods which have the same signature as a
+  // Service meaning returns HttpResponse and has HttpRequest as parameter
   public UserService() {
     final var userController = new UserController();
     super.methods.put(Method.POST, userController::addUser);
