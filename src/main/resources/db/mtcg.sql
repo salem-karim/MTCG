@@ -100,13 +100,3 @@ CREATE TABLE package_cards (
     card_id uuid NOT NULL REFERENCES cards (id) ON DELETE CASCADE,
     PRIMARY KEY (package_id, card_id)
 );
-
--- Create Battles Table (to log battles)
-CREATE TABLE battles (
-    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user1_id uuid REFERENCES users (id) ON DELETE CASCADE,
-    user2_id uuid REFERENCES users (id) ON DELETE CASCADE,
-    result varchar(20) CHECK (result IN ('win', 'lose', 'draw')),
-    elo_change_user1 int,
-    elo_change_user2 int
-);
