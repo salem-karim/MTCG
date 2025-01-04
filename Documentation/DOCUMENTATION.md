@@ -10,15 +10,27 @@ Which in most Cases were just Controller Methods with the same Signature.\
 Also Instead of Repositories just simple DB Access Classes where used.\
 These just have Methods to only run DB Queries which get used in Controller Methods.\
 The Postgres Database was run via Docker.\
-with an SQL script being executed when building the Container with the DockerFile.
+When building the container with the DockerFile an SQL script gets executed.\
+And finally all the maven dependencies which are used and are also in the [pom.xml](../pom.xml) file are: \
+- `jackson` : To use the ObjectMapper and annotations to De-/Serialize JSON Data.
+- `jbcrypt` : To hash the users password to store in the Database
+- `json` : For loading the Database Data from a json file 
+- `postgesql` : Drivers for the Database adapter itself
+- `lombok` : For easier Getters and Setters
+- `junit-jupiter` : JUNIT5 for Unit Testing
+- `mockito` : To mock Databases in Unit Tests
 
 ### Database Design
 
 The main Tables were made (users, cards, deck, stack, packages).\
 Later on deck/stack/package_cards tables were made to hold the card Ids of those Tables.\
-For Package purchaes the transactions table got referenced by the package table to determine if a Package has been bought.\
-Lastly I made a rading_deals table which hold all the reading deals.\
-This made me need to change the stack_cards table to show if a card is in deck or in a deal.
+For Package purchaes the transactions table got referenced by the package table,\
+to determine if a Package has been bought.\
+Then I made a rading_deals table which hold all the reading deals.\
+This made me need to change the stack_cards table to show if a card is in deck or in a deal.\
+Finally things I would change:
+- Instead of separate deck and stacks tables just put their ids into the users table.
+
 
 
 ### Structure
@@ -35,6 +47,10 @@ This made me need to change the stack_cards table to show if a card is in deck o
 
 [Specification](./MTCG_Specification.pdf)
 
-[Here](./mtcg-api.yaml) you can find the API Endpoints which are implemented almost each with a new Service which maps the Methods to Controller Methods which themselves are there own Services\
+[Here](./mtcg-api.yaml) you can find the API Endpoints which are implemented almost each with a new Service which maps the Methods to Controller Methods which themselves are there own Services
+
+### Unit Tests
+
+
 
 

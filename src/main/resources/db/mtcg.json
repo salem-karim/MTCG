@@ -1,5 +1,5 @@
 {
-  "db_url": "jdbc:postgresql://localhost:5432/mtcg_db",
+  "db_url": "jdbc:postgresql://localhost:5434/mtcg_db",
   "user": "mtcgdb",
   "password": "mtcgadmin"
 }
