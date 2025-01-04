@@ -4,11 +4,11 @@ GitHub Repo for the: [MTCG](https://github.com/salem-karim/MTCG.git) Monster Tra
 
 ## Running the project
 
-Make sure you have Docker & Java Installed.
-Either run it with the run script or use your IDE.
-In Intelij make a new run config to build & run the Docker container.
-Make sure to map the port 5432:5432 and name it however you like.
-Then in the java run config make sure to run the docker config beforehand.
+Make sure you have Docker & Java Installed.\
+Either run it with the run script or use your IDE.\
+In Intelij make a new run config to build & run the Docker container.\
+Make sure to map the port 5432:5432 and name it however you like.\
+Then in the java run config make sure to run the docker config beforehand.\
 
 ## Documentation
 
