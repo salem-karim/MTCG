@@ -137,6 +137,7 @@
 - Started with testing the server’s core functionality:  
   - Tested the server, router, and `UserService`.  
 - Focused on Controller Methods as Services had similar structures.  
+- Tested `Package` Model Class as the Constructor only allowed `Card[]` of certain size.
 - Specialized tests:  
   - `PackageControllerTest`:  
     - Used Mockito to mock database interactions.  
@@ -146,3 +147,28 @@
 - Challenges:  
   - Refactoring often broke unit tests, slowing development.  
   - Post-refactor, tests for controllers were revisited to validate complex and simple methods.  
+
+----
+
+## Time tracking
+
+| Feature                           | Time spent |
+| --------------------------------- | ---------- |
+| Maven project & Git Repo          | 1h         |
+| Adapting httpserverbase           | 5h         |
+| Implementing Models               | 3h         |
+| Creating first Method Flow        | 3h         |
+| Making the Database               | 4h         |
+| Running the Database in Docker    | 4h         |
+| Implementing DB Methods           | 6h         |
+| Learning about Maven Dependencies | 2h         |
+| Features for Intermediate Hand-In | 6h         |
+| Packages                          | 5h         |
+| Transactions                      | 8h         |
+| First Time using Mockito          | 6h         |
+| Cards & Decks                     | 6h         |
+| User Data & Stats                 | 5h         |
+| Trading                           | 8h         |
+| Battle                            | 12h        |
+| Debugging and Refactoring         | 20h        |
+| Total Time                        | 104h       |
