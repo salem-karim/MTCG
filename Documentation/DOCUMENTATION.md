@@ -134,6 +134,8 @@
 
 ## Unit Tests
 
+The Libraries JUNIT 5 and Mockito were used to write the Unit Tests.
+
 - Started with testing the server’s core functionality:  
   - Tested the server, router, and `UserService`.  
 - Focused on Controller Methods as Services had similar structures.  
