@@ -74,9 +74,13 @@ Now onto the different Endpoints and how I manage them :
   - Here I use the `PackageController` which's `addPackage` Method gets invoked by the Service.
   - It reads the Card Data from the Body of the Request, then generates a random Package UUID and inserts it into the Database.
   - Here I first realized that a in between table `stack_cards` was needed to hold the card Id's of the Package.
+  - After a Presentation was asked to move the Authentication into a Middleware.
 
 - **Transactions** :
-  - Made a `transactions` table to hold a record of the purchase of the package.
+  - Moved the Authentication into the building of a Request Object.
+  - Needed to change Unit Test due to refactor.
+  - Made a `transactions` table to hold a record of the purchase of the package the package then holds a Foreign Key to this table and it one to the package which has been bought.
+
   - Failures :
     - At First I had not made the update of the users money purchase into a single Database Transactions.
     - Later on realized that taking a random Package from the Databases does not work with the given Test curl script.
@@ -86,6 +90,22 @@ Now onto the different Endpoints and how I manage them :
 - **Deck**
   - Moved the initialization of Deck and Stack table to User creation.
   - Found out that the PUT Method for the Request actually should be a POST since it also allows CONFLICT to happen. But that is how the API specifies it.
+
+- **UserData&Stats**
+  - for the Endpoints `/users/{username}`, `/stats` and `/scoreboard` new Classes were made to only Serialize this Data for ease of use.
+  - Implementation went smoothly.
+
+- **Battle**
+  - Made a static Class the `BattleLobby` which holds a `List<Pair<User>>` the `Pair` Class simply contains 2 members of the same Type and are called first/second.
+  - It puts a User into a Pair and if 2 Users are found int puts the Pair into the List and clears it current one.
+  - Afterwards its submits a `BattleExecutor` Object with the 2 Users and waits for the `Future<String>` to finish this String then becomes the BattleLog
+  - In the battle the Decks of the Users gets copied and then put through various methods and calculations and card object movements until one of the copies are empty. The old Deck object then are used to move the Cards of the looser to the winner Stack and then the accumulated Battle Log then gets returned. 
+
+
+- **Trading**
+  - Struggled with a lot of validation before completing the trade the creation, listing and deletion went well.
+  - Refactor added the Deck ID and Trading Deal ID to each card of the users stack.
+
 
 ### Unit Tests
 
