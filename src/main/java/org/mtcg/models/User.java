@@ -26,7 +26,7 @@ public class User {
   private String image = "";
   private String name = "";
   private int coins = 20;
-  private int elo = 0;
+  private int elo = 100;
   private int wins = 0;
   private int losses = 0;
 

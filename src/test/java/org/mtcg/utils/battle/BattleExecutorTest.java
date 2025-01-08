@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mtcg.models.Card;
 import org.mtcg.models.Deck;
+import org.mtcg.models.User;
 import org.mtcg.utils.Pair;
 
 class BattleExecutorTest {
@@ -23,8 +24,8 @@ class BattleExecutorTest {
   @Test
   void testFight_PureMonsterFight() {
     // Create decks
-    List<Card> strongerDeckCards = new ArrayList<>();
-    List<Card> weakerDeckCards = new ArrayList<>();
+    final List<Card> strongerDeckCards = new ArrayList<>();
+    final List<Card> weakerDeckCards = new ArrayList<>();
 
     for (int i = 0; i < 4; i++) {
       strongerDeckCards.add(new Card(
@@ -44,21 +45,21 @@ class BattleExecutorTest {
           Card.Element.NORMAL));
     }
 
-    Deck strongerDeck = new Deck(strongerDeckCards, UUID.randomUUID());
-    Deck weakerDeck = new Deck(weakerDeckCards, UUID.randomUUID());
+    final Deck strongerDeck = new Deck(strongerDeckCards, UUID.randomUUID());
+    final Deck weakerDeck = new Deck(weakerDeckCards, UUID.randomUUID());
 
-    Card weakerMonster = weakerDeck.getRandomCard();
-    Card strongerMonster = strongerDeck.getRandomCard();
+    final Card weakerMonster = weakerDeck.getRandomCard();
+    final Card strongerMonster = strongerDeck.getRandomCard();
 
-    Pair<Card> result = battleExecutor.fight(strongerDeck, strongerMonster, weakerDeck, weakerMonster);
+    final Pair<Card> result = battleExecutor.fight(strongerDeck, strongerMonster, weakerDeck, weakerMonster);
     assertEquals(weakerMonster, result.first); // Loser
     assertEquals(strongerMonster, result.second); // Winner
   }
 
   @Test
   void testMoveLooserCardIntoWinnerDeck() {
-    List<Card> deck1Cards = new ArrayList<>();
-    List<Card> deck2Cards = new ArrayList<>();
+    final List<Card> deck1Cards = new ArrayList<>();
+    final List<Card> deck2Cards = new ArrayList<>();
 
     // Create cards for deck1
     for (int i = 0; i < 4; i++) {
@@ -80,9 +81,9 @@ class BattleExecutorTest {
           Card.Element.NORMAL));
     }
 
-    Deck deck1 = new Deck(deck1Cards, UUID.randomUUID());
-    Deck deck2 = new Deck(deck2Cards, UUID.randomUUID());
-    Card cardToMove = deck1Cards.get(0);
+    final Deck deck1 = new Deck(deck1Cards, UUID.randomUUID());
+    final Deck deck2 = new Deck(deck2Cards, UUID.randomUUID());
+    final Card cardToMove = deck1Cards.get(0);
 
     battleExecutor.moveLooserCardIntoWinnerDeck(deck1, deck2, cardToMove);
 
@@ -97,17 +98,17 @@ class BattleExecutorTest {
 
   @Test
   void testFight_DragonVsGoblin_SpecialCase() {
-    List<Card> dragonDeckCards = new ArrayList<>();
-    List<Card> goblinDeckCards = new ArrayList<>();
+    final List<Card> dragonDeckCards = new ArrayList<>();
+    final List<Card> goblinDeckCards = new ArrayList<>();
 
-    Card dragon = new Card(
+    final Card dragon = new Card(
         UUID.randomUUID(),
         "Dragon",
         50.0,
         Card.CardType.MONSTER,
         Card.Element.NORMAL);
 
-    Card goblin = new Card(
+    final Card goblin = new Card(
         UUID.randomUUID(),
         "Goblin",
         100.0,
@@ -132,27 +133,76 @@ class BattleExecutorTest {
           Card.Element.NORMAL));
     }
 
-    Deck dragonDeck = new Deck(dragonDeckCards, UUID.randomUUID());
-    Deck goblinDeck = new Deck(goblinDeckCards, UUID.randomUUID());
+    final Deck dragonDeck = new Deck(dragonDeckCards, UUID.randomUUID());
+    final Deck goblinDeck = new Deck(goblinDeckCards, UUID.randomUUID());
 
-    Pair<Card> result = battleExecutor.fight(goblinDeck, goblin, dragonDeck, dragon);
+    final Pair<Card> result = battleExecutor.fight(goblinDeck, goblin, dragonDeck, dragon);
     assertEquals(goblin, result.first); // Goblin should lose
     assertEquals(dragon, result.second); // Dragon should win
   }
 
   @Test
-  void testFight_SpellFight() {
-    List<Card> waterDeckCards = new ArrayList<>();
-    List<Card> fireDeckCards = new ArrayList<>();
+  void testTieOutcome() {
+    final Card card1 = new Card(
+        UUID.randomUUID(),
+        "EqualCard",
+        50.0,
+        Card.CardType.MONSTER,
+        Card.Element.NORMAL);
 
-    Card waterSpell = new Card(
+    final Card card2 = new Card(
+        UUID.randomUUID(),
+        "EqualCard",
+        50.0,
+        Card.CardType.MONSTER,
+        Card.Element.NORMAL);
+
+    // Create decks with the identical cards
+    final List<Card> deck1Cards = new ArrayList<>();
+    final List<Card> deck2Cards = new ArrayList<>();
+
+    deck1Cards.add(card1);
+    deck2Cards.add(card2);
+
+    // Add some filler cards
+    for (int i = 0; i < 3; i++) {
+      deck1Cards.add(new Card(
+          UUID.randomUUID(),
+          "Filler",
+          50.0,
+          Card.CardType.MONSTER,
+          Card.Element.NORMAL));
+      deck2Cards.add(new Card(
+          UUID.randomUUID(),
+          "Filler",
+          50.0,
+          Card.CardType.MONSTER,
+          Card.Element.NORMAL));
+    }
+
+    final Deck deck1 = new Deck(deck1Cards, UUID.randomUUID());
+    final Deck deck2 = new Deck(deck2Cards, UUID.randomUUID());
+
+    // Test the fight method with equal cards
+    final Pair<Card> result = battleExecutor.fight(deck1, card1, deck2, card2);
+
+    // For a tie, the fight method should return null
+    assertNull(result, "Fight between equal cards should result in a tie (null)");
+  }
+
+  @Test
+  void testFight_SpellFight() {
+    final List<Card> waterDeckCards = new ArrayList<>();
+    final List<Card> fireDeckCards = new ArrayList<>();
+
+    final Card waterSpell = new Card(
         UUID.randomUUID(),
         "WaterSpell",
         50.0,
         Card.CardType.SPELL,
         Card.Element.WATER);
 
-    Card fireSpell = new Card(
+    final Card fireSpell = new Card(
         UUID.randomUUID(),
         "FireSpell",
         50.0,
@@ -177,18 +227,70 @@ class BattleExecutorTest {
           Card.Element.FIRE));
     }
 
-    Deck waterDeck = new Deck(waterDeckCards, UUID.randomUUID());
-    Deck fireDeck = new Deck(fireDeckCards, UUID.randomUUID());
+    final Deck waterDeck = new Deck(waterDeckCards, UUID.randomUUID());
+    final Deck fireDeck = new Deck(fireDeckCards, UUID.randomUUID());
 
-    Pair<Card> result = battleExecutor.fight(fireDeck, fireSpell, waterDeck, waterSpell);
+    final Pair<Card> result = battleExecutor.fight(fireDeck, fireSpell, waterDeck, waterSpell);
     assertEquals(fireSpell, result.first); // Fire loses to Water
     assertEquals(waterSpell, result.second); // Water wins against Fire
+  }
+
+  @Test
+  void testFullBattleTie() throws Exception {
+    // Create users for the battle with 0 wins/losses
+    User user1 = new User("player1", "pass");
+    User user2 = new User("player2", "pass");
+
+    // Create identical decks for both users to force a tie
+    List<Card> deck1Cards = new ArrayList<>();
+    List<Card> deck2Cards = new ArrayList<>();
+
+    // Create 4 pairs of identical cards
+    for (int i = 0; i < 4; i++) {
+      Card card1 = new Card(
+          UUID.randomUUID(),
+          "Card_" + i,
+          50.0,
+          Card.CardType.MONSTER,
+          Card.Element.NORMAL);
+
+      Card card2 = new Card(
+          UUID.randomUUID(),
+          "Card_" + i,
+          50.0,
+          Card.CardType.MONSTER,
+          Card.Element.NORMAL);
+
+      deck1Cards.add(card1);
+      deck2Cards.add(card2);
+    }
+
+    Deck deck1 = new Deck(deck1Cards, UUID.randomUUID());
+    Deck deck2 = new Deck(deck2Cards, UUID.randomUUID());
+
+    // Create battle executor with the users
+    BattleExecutor tieExecutor = new BattleExecutor(user1, user2);
+
+    // Use performBattle directly instead of call()
+    String battleLog = tieExecutor.performBattle(deck1, deck2);
+
+    // Verify the battle ended in a tie
+    assertTrue(battleLog.contains("Battle ended in a Tie"),
+        "Battle log should indicate a tie");
+
+    // Verify user stats remained unchanged
+    assertEquals(100, user1.getElo(), "User1's ELO should remain unchanged after tie");
+    assertEquals(100, user2.getElo(), "User2's ELO should remain unchanged after tie");
+    assertEquals(0, user1.getWins(), "User1's wins should remain unchanged after tie");
+    assertEquals(0, user2.getWins(), "User2's wins should remain unchanged after tie");
+    assertEquals(0, user1.getLosses(), "User1's losses should remain unchanged after tie");
+    assertEquals(0, user2.getLosses(), "User2's losses should remain unchanged after tie");
   }
 
   // New tests for deck size boost mechanics
   @Test
   void testDeckSizeBoost() {
-    List<Card> deckCards = new ArrayList<>();
+    final List<Card> deckCards = new ArrayList<>();
     for (int i = 0; i < 4; i++) {
       deckCards.add(new Card(
           UUID.randomUUID(),
@@ -198,7 +300,7 @@ class BattleExecutorTest {
           Card.Element.NORMAL));
     }
 
-    Deck deck = new Deck(deckCards, UUID.randomUUID());
+    final Deck deck = new Deck(deckCards, UUID.randomUUID());
 
     // Test initial state (4 cards)
     deck.applyDamageBoost();
@@ -217,7 +319,7 @@ class BattleExecutorTest {
 
   @Test
   void testVictoryBoost() {
-    Card winner = new Card(
+    final Card winner = new Card(
         UUID.randomUUID(),
         "Winner",
         100.0,
@@ -230,12 +332,12 @@ class BattleExecutorTest {
     }
 
     // The damage should either be 100 (no boost) or 130 (boosted once)
-    double finalDamage = winner.getDamage();
+    final double finalDamage = winner.getDamage();
     assertTrue(finalDamage == 100.0 || finalDamage == 130.0);
 
     // If boosted, verify it can't be boosted again
     if (winner.isHasVictoryBoost()) {
-      double damageBeforeAttempt = winner.getDamage();
+      final double damageBeforeAttempt = winner.getDamage();
       winner.tryApplyVictoryBoost();
       assertEquals(damageBeforeAttempt, winner.getDamage(), 0.001);
     }
@@ -243,17 +345,17 @@ class BattleExecutorTest {
 
   @Test
   void testSmallDeckSpecialCaseReversal() {
-    List<Card> goblinDeckCards = new ArrayList<>();
-    List<Card> dragonDeckCards = new ArrayList<>();
+    final List<Card> goblinDeckCards = new ArrayList<>();
+    final List<Card> dragonDeckCards = new ArrayList<>();
 
     // Main cards for testing
-    Card goblin = new Card(
+    final Card goblin = new Card(
         UUID.randomUUID(),
         "Goblin",
         100.0,
         Card.CardType.MONSTER,
         Card.Element.NORMAL);
-    Card dragon = new Card(
+    final Card dragon = new Card(
         UUID.randomUUID(),
         "Dragon",
         150.0,
@@ -282,8 +384,8 @@ class BattleExecutorTest {
           Card.Element.NORMAL));
     }
 
-    Deck goblinDeck = new Deck(goblinDeckCards, UUID.randomUUID());
-    Deck dragonDeck = new Deck(dragonDeckCards, UUID.randomUUID());
+    final Deck goblinDeck = new Deck(goblinDeckCards, UUID.randomUUID());
+    final Deck dragonDeck = new Deck(dragonDeckCards, UUID.randomUUID());
 
     // Remove cards from goblin deck to test small deck mechanics
     // Remove 2 cards to leave only 2 cards in the deck
@@ -292,10 +394,10 @@ class BattleExecutorTest {
 
     // Run multiple fights to test probability
     int reversalsTwoCards = 0;
-    int totalFights = 1000;
+    final int totalFights = 1000;
 
     for (int i = 0; i < totalFights; i++) {
-      Pair<Card> result = battleExecutor.fight(goblinDeck, goblin, dragonDeck, dragon);
+      final Pair<Card> result = battleExecutor.fight(goblinDeck, goblin, dragonDeck, dragon);
       if (result.second == goblin) {
         reversalsTwoCards++;
       }
@@ -305,15 +407,15 @@ class BattleExecutorTest {
     int reversalsOneCard = 0;
 
     for (int i = 0; i < totalFights; i++) {
-      Pair<Card> result = battleExecutor.fight(goblinDeck, goblin, dragonDeck, dragon);
+      final Pair<Card> result = battleExecutor.fight(goblinDeck, goblin, dragonDeck, dragon);
       if (result.second == goblin) {
         reversalsOneCard++;
       }
     }
 
     // Calculate rates
-    double twoCardRate = (double) reversalsTwoCards / totalFights;
-    double oneCardRate = (double) reversalsOneCard / totalFights;
+    final double twoCardRate = (double) reversalsTwoCards / totalFights;
+    final double oneCardRate = (double) reversalsOneCard / totalFights;
 
     // Assert both probabilities
     assertTrue(twoCardRate > 0.2 && twoCardRate < 0.3,

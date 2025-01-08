@@ -48,7 +48,7 @@ public class BattleExecutor implements Callable<String> {
     return performBattle(deck1, deck2); // Return battle log
   }
 
-  private String performBattle(final Deck deck1, final Deck deck2) throws Exception {
+  protected String performBattle(final Deck deck1, final Deck deck2) throws Exception {
     // Make copy of Deck using Copy Constructor
     final var battleDeck1 = new Deck(deck1);
     final var battleDeck2 = new Deck(deck2);
@@ -192,6 +192,10 @@ public class BattleExecutor implements Callable<String> {
 
     // Normal combat resolution
     if (card1.getCardType() == Card.CardType.MONSTER && card2.getCardType() == Card.CardType.MONSTER) {
+      // use Math.abs to get the absolute difference and
+      // check if the double precision error is smaller then 0.001
+      if (Math.abs(card1.getDamage() - card2.getDamage()) < 0.001)
+        return null;
       Card winner = card1.getDamage() > card2.getDamage() ? card1 : card2;
       winner.tryApplyVictoryBoost();
       return new Pair<>(winner == card1 ? card2 : card1, winner);
@@ -199,9 +203,13 @@ public class BattleExecutor implements Callable<String> {
 
     // Spell combat resolution
     if (card1.getCardType() == Card.CardType.SPELL || card2.getCardType() == Card.CardType.SPELL) {
+
       double damage1 = card1.getDamage() * calculateDamage(card1, card2);
       double damage2 = card2.getDamage() * calculateDamage(card2, card1);
 
+      // the same check here
+      if (Math.abs(damage1 - damage2) < 0.001)
+        return null; // Tie case
       Card winner = damage1 > damage2 ? card1 : card2;
       winner.tryApplyVictoryBoost();
       return new Pair<>(winner == card1 ? card2 : card1, winner);
